@@ -14,6 +14,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { bn } from '@/lib/bengali';
 
 const skills = ['প্লাম্বার', 'ইলেকট্রিশিয়ান', 'রং মিস্ত্রি', 'কাঠ মিস্ত্রি'];
 const districts = ['ঢাকা', 'রাজশাহী', 'চট্টগ্রাম', 'সিলেট', 'খুলনা'];
@@ -103,7 +104,7 @@ export default function Home() {
               </Button>
             </div>
           </div>
-          <div className="relative min-h-[300px] overflow-hidden rounded-lg border bg-muted">
+          <div className="relative min-h-75 overflow-hidden rounded-lg border bg-muted">
             <Image
               src="/brand/hero-worker.jpeg"
               alt="কর্মী ও গ্রাহকের করমর্দন"
@@ -123,11 +124,12 @@ export default function Home() {
               <Search className="size-5 text-primary" />
               <h2 className="text-xl font-bold">কর্মী খুঁজুন</h2>
             </div>
-            <div className="space-y-4">
+            <form action="/workers" className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="skill">সেবা</Label>
+                <Label htmlFor="skill">{bn.field.skill}</Label>
                 <select
                   id="skill"
+                  name="skill"
                   className="h-11 w-full rounded-md border border-input bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   defaultValue="প্লাম্বার"
                 >
@@ -137,9 +139,10 @@ export default function Home() {
                 </select>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="district">জেলা</Label>
+                <Label htmlFor="district">{bn.field.district}</Label>
                 <select
                   id="district"
+                  name="district"
                   className="h-11 w-full rounded-md border border-input bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   defaultValue="ঢাকা"
                 >
@@ -149,16 +152,14 @@ export default function Home() {
                 </select>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="area">এলাকা</Label>
+                <Label htmlFor="area">{bn.field.area}</Label>
                 <Input id="area" placeholder="যেমন: মিরপুর ১০" />
               </div>
-              <Button className="w-full" asChild>
-                <a href="/workers">
-                  <Search />
-                  ফলাফল দেখুন
-                </a>
+              <Button className="w-full">
+                <Search />
+                {bn.action.viewResults}
               </Button>
-            </div>
+            </form>
           </aside>
 
           <div className="space-y-4">
@@ -167,7 +168,7 @@ export default function Home() {
                 key={worker.phone}
                 className="grid gap-4 rounded-lg border bg-card p-4 shadow-sm sm:grid-cols-[132px_1fr_auto]"
               >
-                <div className="relative aspect-[4/3] overflow-hidden rounded-md bg-muted sm:aspect-square">
+                <div className="relative aspect-4/3 overflow-hidden rounded-md bg-muted sm:aspect-square">
                   <Image
                     src={worker.image}
                     alt={worker.skill}

@@ -1,0 +1,38 @@
+export const bn = {
+  appName: 'দক্ষ',
+  nav: {
+    home: 'হোমে ফিরুন',
+    searchWorkers: 'কর্মী খুঁজুন',
+    becomeWorker: 'কর্মী হোন',
+    admin: 'অ্যাডমিন',
+    dashboard: 'ড্যাশবোর্ড',
+  },
+  action: {
+    search: 'খুঁজুন',
+    viewResults: 'ফলাফল দেখুন',
+    call: 'কল করুন',
+    register: 'রেজিস্টার',
+    login: 'লগইন',
+    approve: 'অনুমোদন',
+    deactivate: 'ডিঅ্যাক্টিভ',
+    refresh: 'রিফ্রেশ',
+  },
+  field: {
+    name: 'নাম',
+    phone: 'ফোন নম্বর',
+    password: 'পাসওয়ার্ড',
+    skill: 'সেবা',
+    district: 'জেলা',
+    area: 'এলাকা',
+    upazila: 'উপজেলা/থানা',
+    experience: 'অভিজ্ঞতা',
+    availability: 'অবস্থা',
+  },
+  status: {
+    approved: 'অনুমোদিত',
+    pending: 'অপেক্ষমান',
+    deactivated: 'ডিঅ্যাক্টিভ',
+    available: 'কাজ নিতে পারবেন',
+    notAvailable: 'এখন ব্যস্ত',
+  },
+};

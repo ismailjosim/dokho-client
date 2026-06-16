@@ -1,6 +1,6 @@
 'use client';
 
-import { FormEvent, useState } from 'react';
+import { FormEvent, useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Hammer, MapPin, Phone, Search } from 'lucide-react';
 
@@ -42,19 +42,28 @@ const WORKERS_QUERY = /* GraphQL */ `
   }
 `;
 
+function getInitialFilters() {
+  if (typeof window === 'undefined') {
+    return { skill: '', district: '' };
+  }
+
+  const params = new URLSearchParams(window.location.search);
+
+  return {
+    skill: params.get('skill') || '',
+    district: params.get('district') || '',
+  };
+}
+
 export default function WorkersPage() {
   const [workers, setWorkers] = useState<Worker[]>([]);
   const [status, setStatus] = useState('সার্চ করলে অনুমোদিত কর্মীদের তালিকা দেখা যাবে।');
   const [isLoading, setIsLoading] = useState(false);
+  const [initialFilters] = useState(getInitialFilters);
 
-  async function handleSearch(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  const searchWorkers = useCallback(async (skill: string, district: string) => {
     setIsLoading(true);
     setStatus('');
-
-    const formData = new FormData(event.currentTarget);
-    const skill = String(formData.get('skill') || '').trim();
-    const district = String(formData.get('district') || '').trim();
 
     try {
       const result = await graphqlRequest<{ workers: Worker[] }>(WORKERS_QUERY, {
@@ -70,7 +79,29 @@ export default function WorkersPage() {
     } finally {
       setIsLoading(false);
     }
+  }, []);
+
+  async function handleSearch(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    const formData = new FormData(event.currentTarget);
+    await searchWorkers(
+      String(formData.get('skill') || '').trim(),
+      String(formData.get('district') || '').trim()
+    );
   }
+
+  useEffect(() => {
+    if (!initialFilters.skill && !initialFilters.district) {
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      void searchWorkers(initialFilters.skill, initialFilters.district);
+    }, 0);
+
+    return () => window.clearTimeout(timer);
+  }, [initialFilters.district, initialFilters.skill, searchWorkers]);
 
   return (
     <main className="mx-auto min-h-screen max-w-5xl px-4 py-8 sm:px-6">
@@ -85,14 +116,28 @@ export default function WorkersPage() {
           <Search className="size-5 text-primary" />
           <h1 className="text-2xl font-bold">কর্মী সার্চ</h1>
         </div>
-        <form className="grid gap-4 sm:grid-cols-[1fr_1fr_auto]" onSubmit={handleSearch}>
+        <form
+          key={`${initialFilters.skill}-${initialFilters.district}`}
+          className="grid gap-4 sm:grid-cols-[1fr_1fr_auto]"
+          onSubmit={handleSearch}
+        >
           <div className="space-y-2">
             <Label htmlFor="skill">সেবা</Label>
-            <Input id="skill" name="skill" placeholder="প্লাম্বার" />
+            <Input
+              id="skill"
+              name="skill"
+              placeholder="প্লাম্বার"
+              defaultValue={initialFilters.skill}
+            />
           </div>
           <div className="space-y-2">
             <Label htmlFor="district">জেলা</Label>
-            <Input id="district" name="district" placeholder="ঢাকা" />
+            <Input
+              id="district"
+              name="district"
+              placeholder="ঢাকা"
+              defaultValue={initialFilters.district}
+            />
           </div>
           <Button className="self-end" disabled={isLoading}>
             <Search />

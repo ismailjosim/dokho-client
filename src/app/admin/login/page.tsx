@@ -7,6 +7,7 @@ import { ArrowLeft, ShieldCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { bn } from '@/lib/bengali';
 import { authTokenStorage, graphqlRequest } from '@/services/graphql/client';
 
 const ADMIN_LOGIN = /* GraphQL */ `
@@ -55,28 +56,31 @@ export default function AdminLoginPage() {
       <Button variant="ghost" asChild className="mb-6 w-fit px-0">
         <Link href="/">
           <ArrowLeft />
-          হোমে ফিরুন
+          {bn.nav.home}
         </Link>
       </Button>
       <div className="rounded-lg border bg-card p-5 shadow-sm">
         <div className="mb-5 flex items-center gap-2">
           <ShieldCheck className="size-5 text-primary" />
-          <h1 className="text-2xl font-bold">অ্যাডমিন লগইন</h1>
+          <h1 className="text-2xl font-bold">অ্যাডমিন {bn.action.login}</h1>
         </div>
         <form className="space-y-4" onSubmit={handleSubmit}>
           <div className="space-y-2">
-            <Label htmlFor="phone">ফোন নম্বর</Label>
+            <Label htmlFor="phone">{bn.field.phone}</Label>
             <Input id="phone" name="phone" required placeholder="01XXXXXXXXX" />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="password">পাসওয়ার্ড</Label>
+            <Label htmlFor="password">{bn.field.password}</Label>
             <Input id="password" name="password" type="password" required minLength={8} />
           </div>
           <Button className="w-full" disabled={isSubmitting}>
-            লগইন
+            {bn.action.login}
           </Button>
         </form>
         {status ? <p className="mt-4 rounded-md bg-muted p-3 text-sm">{status}</p> : null}
+        <Button variant="link" asChild className="mt-3 px-0">
+          <Link href="/admin/dashboard">{bn.nav.dashboard}</Link>
+        </Button>
       </div>
     </main>
   );
