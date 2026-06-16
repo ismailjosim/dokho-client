@@ -60,10 +60,10 @@ export default function Home() {
             <a href="#search" className="hover:text-foreground">
               কর্মী খুঁজুন
             </a>
-            <a href="#join" className="hover:text-foreground">
+            <a href="/register" className="hover:text-foreground">
               কর্মী হোন
             </a>
-            <a href="#admin" className="hover:text-foreground">
+            <a href="/admin/login" className="hover:text-foreground">
               অ্যাডমিন
             </a>
           </nav>
@@ -90,13 +90,13 @@ export default function Home() {
             </p>
             <div className="mt-6 flex flex-col gap-3 sm:flex-row">
               <Button size="lg" asChild>
-                <a href="#search">
+                <a href="/workers">
                   <Search />
                   এখনই খুঁজুন
                 </a>
               </Button>
               <Button variant="outline" size="lg" asChild>
-                <a href="#join">
+                <a href="/register">
                   <UserRoundPlus />
                   কর্মী হিসেবে যোগ দিন
                 </a>
@@ -152,9 +152,11 @@ export default function Home() {
                 <Label htmlFor="area">এলাকা</Label>
                 <Input id="area" placeholder="যেমন: মিরপুর ১০" />
               </div>
-              <Button className="w-full">
-                <Search />
-                ফলাফল দেখুন
+              <Button className="w-full" asChild>
+                <a href="/workers">
+                  <Search />
+                  ফলাফল দেখুন
+                </a>
               </Button>
             </div>
           </aside>
@@ -233,9 +235,11 @@ export default function Home() {
               থেকে নিয়ন্ত্রণ করা হবে।
             </p>
           </div>
-          <Button variant="secondary" size="lg">
-            ড্যাশবোর্ড প্ল্যান
-            <ArrowRight />
+          <Button variant="secondary" size="lg" asChild>
+            <a href="/admin/login">
+              ড্যাশবোর্ড লগইন
+              <ArrowRight />
+            </a>
           </Button>
         </div>
       </section>
