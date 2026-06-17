@@ -129,6 +129,28 @@ function readFileAsDataUrl(file: File) {
   });
 }
 
+function UploadPreview({ label, url }: { label: string; url: string }) {
+  if (!url) return null;
+
+  return (
+    <div className="rounded-md border bg-background p-2">
+      <div
+        aria-label={label}
+        className="h-32 w-full rounded-sm bg-muted bg-cover bg-center"
+        style={{ backgroundImage: `url(${url})` }}
+      />
+      <a
+        className="mt-2 block text-sm font-medium text-primary hover:underline"
+        href={url}
+        target="_blank"
+        rel="noreferrer"
+      >
+        {label} দেখুন
+      </a>
+    </div>
+  );
+}
+
 export default function WorkerProfilePage() {
   const [account, setAccount] = useState<AccountUser | null>(null);
   const [profile, setProfile] = useState<MyWorkerProfile | null>(null);
@@ -495,15 +517,7 @@ export default function WorkerProfilePage() {
               accept="image/*"
               onChange={(event) => void handleImageUpload('profilePhoto', event.target.files?.[0])}
             />
-            {media.profilePhotoUrl ? (
-              <a
-                className="block text-sm font-medium text-primary hover:underline"
-                href={media.profilePhotoUrl}
-                target="_blank"
-              >
-                আপলোড করা ছবি দেখুন
-              </a>
-            ) : null}
+            <UploadPreview label="প্রোফাইল ছবি" url={media.profilePhotoUrl} />
           </div>
           <div className="space-y-2">
             <Label htmlFor="nidFront">NID সামনের ছবি</Label>
@@ -513,15 +527,7 @@ export default function WorkerProfilePage() {
               accept="image/*"
               onChange={(event) => void handleImageUpload('nidFront', event.target.files?.[0])}
             />
-            {media.nidFrontUrl ? (
-              <a
-                className="block text-sm font-medium text-primary hover:underline"
-                href={media.nidFrontUrl}
-                target="_blank"
-              >
-                NID সামনের ছবি দেখুন
-              </a>
-            ) : null}
+            <UploadPreview label="NID সামনের ছবি" url={media.nidFrontUrl} />
           </div>
           <div className="space-y-2">
             <Label htmlFor="nidBack">NID পেছনের ছবি</Label>
@@ -531,15 +537,7 @@ export default function WorkerProfilePage() {
               accept="image/*"
               onChange={(event) => void handleImageUpload('nidBack', event.target.files?.[0])}
             />
-            {media.nidBackUrl ? (
-              <a
-                className="block text-sm font-medium text-primary hover:underline"
-                href={media.nidBackUrl}
-                target="_blank"
-              >
-                NID পেছনের ছবি দেখুন
-              </a>
-            ) : null}
+            <UploadPreview label="NID পেছনের ছবি" url={media.nidBackUrl} />
           </div>
           <div className="space-y-2">
             <Label htmlFor="experienceYears">অভিজ্ঞতা</Label>

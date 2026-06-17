@@ -24,6 +24,7 @@ const WORKERS_QUERY = /* GraphQL */ `
       district
       upazila
       area
+      profilePhotoUrl
       experienceYears
       availability
       user {

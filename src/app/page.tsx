@@ -2,9 +2,6 @@ import Image from 'next/image';
 import Link from 'next/link';
 import {
   ArrowRight,
-  BadgeCheck,
-  Hammer,
-  MapPin,
   Phone,
   Search,
   ShieldCheck,
@@ -13,26 +10,8 @@ import {
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { HomeFeaturedWorkers } from '@/components/home/home-featured-workers';
 import { HomeSearchForm } from '@/components/home/home-search-form';
-
-const workers = [
-  {
-    name: 'মো. রফিকুল ইসলাম',
-    skill: 'প্লাম্বার',
-    area: 'মিরপুর, ঢাকা',
-    experience: '৮ বছর',
-    phone: '01710-000000',
-    image: '/brand/plumber.jpeg',
-  },
-  {
-    name: 'সোহেল রানা',
-    skill: 'ইলেকট্রিশিয়ান',
-    area: 'বোয়ালিয়া, রাজশাহী',
-    experience: '৬ বছর',
-    phone: '01820-000000',
-    image: '/brand/electrician.jpeg',
-  },
-];
 
 const approvalSteps = [
   'ওটিপি দিয়ে রেজিস্ট্রেশন',
@@ -126,52 +105,7 @@ export default function Home() {
             <HomeSearchForm />
           </aside>
 
-          <div className="space-y-4">
-            {workers.map((worker) => (
-              <article
-                key={worker.phone}
-                className="grid gap-4 rounded-lg border bg-card p-4 shadow-sm sm:grid-cols-[132px_1fr_auto]"
-              >
-                <div className="relative aspect-4/3 overflow-hidden rounded-md bg-muted sm:aspect-square">
-                  <Image
-                    src={worker.image}
-                    alt={worker.skill}
-                    fill
-                    sizes="132px"
-                    className="object-cover"
-                  />
-                </div>
-                <div className="min-w-0">
-                  <div className="mb-2 flex flex-wrap items-center gap-2">
-                    <Badge variant="success">
-                      <BadgeCheck />
-                      অনুমোদিত
-                    </Badge>
-                    <Badge variant="secondary">{worker.skill}</Badge>
-                  </div>
-                  <h3 className="text-xl font-bold">{worker.name}</h3>
-                  <div className="mt-2 flex flex-wrap gap-3 text-sm text-muted-foreground">
-                    <span className="inline-flex items-center gap-1">
-                      <MapPin className="size-4" />
-                      {worker.area}
-                    </span>
-                    <span className="inline-flex items-center gap-1">
-                      <Hammer className="size-4" />
-                      অভিজ্ঞতা {worker.experience}
-                    </span>
-                  </div>
-                </div>
-                <div className="flex items-center sm:justify-end">
-                  <Button asChild>
-                    <a href={`tel:${worker.phone}`}>
-                      <Phone />
-                      কল করুন
-                    </a>
-                  </Button>
-                </div>
-              </article>
-            ))}
-          </div>
+          <HomeFeaturedWorkers />
         </div>
       </section>
 

@@ -1,4 +1,5 @@
-import { BadgeCheck, BriefcaseBusiness, Eye, Hammer, MapPin, Phone } from 'lucide-react';
+import Link from 'next/link';
+import { BadgeCheck, BriefcaseBusiness, Eye, Hammer, MapPin, Phone, UserRound } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -9,6 +10,7 @@ export type WorkerResult = {
   district: string;
   upazila?: string | null;
   area?: string | null;
+  profilePhotoUrl?: string | null;
   experienceYears: number;
   availability: 'AVAILABLE' | 'NOT_AVAILABLE';
   user: {
@@ -27,38 +29,57 @@ function getWorkerLocation(worker: WorkerResult) {
 
 export function WorkerResultCard({ worker }: WorkerResultCardProps) {
   const isAvailable = worker.availability === 'AVAILABLE';
+  const initial = worker.user.name.trim().charAt(0) || 'ক';
 
   return (
     <article className="rounded-lg border bg-card p-4 shadow-sm">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div className="min-w-0 flex-1">
-          <div className="mb-3 flex flex-wrap gap-2">
-            <Badge variant="success">
-              <BadgeCheck />
-              অনুমোদিত
-            </Badge>
-            <Badge variant="secondary">
-              <Hammer />
-              {worker.skill}
-            </Badge>
-            <Badge variant={isAvailable ? 'success' : 'outline'}>
-              <BriefcaseBusiness />
-              {isAvailable ? 'কাজ নিতে পারবেন' : 'এখন ব্যস্ত'}
-            </Badge>
+        <div className="flex min-w-0 flex-1 flex-col gap-4 sm:flex-row">
+          <div className="flex size-24 shrink-0 items-center justify-center overflow-hidden rounded-md border bg-muted">
+            {worker.profilePhotoUrl ? (
+              <div
+                aria-label={`${worker.user.name} এর প্রোফাইল ছবি`}
+                className="h-full w-full bg-cover bg-center"
+                role="img"
+                style={{ backgroundImage: `url(${worker.profilePhotoUrl})` }}
+              />
+            ) : (
+              <div className="flex h-full w-full flex-col items-center justify-center gap-1 text-muted-foreground">
+                <UserRound className="size-7" />
+                <span className="text-lg font-bold">{initial}</span>
+              </div>
+            )}
           </div>
 
-          <h2 className="break-words text-xl font-bold leading-7">{worker.user.name}</h2>
+          <div className="min-w-0 flex-1">
+            <div className="mb-3 flex flex-wrap gap-2">
+              <Badge variant="success">
+                <BadgeCheck />
+                অনুমোদিত
+              </Badge>
+              <Badge variant="secondary">
+                <Hammer />
+                {worker.skill}
+              </Badge>
+              <Badge variant={isAvailable ? 'success' : 'outline'}>
+                <BriefcaseBusiness />
+                {isAvailable ? 'কাজ নিতে পারবেন' : 'এখন ব্যস্ত'}
+              </Badge>
+            </div>
 
-          <dl className="mt-3 grid gap-2 text-sm leading-6 text-muted-foreground">
-            <div className="flex min-w-0 items-start gap-2">
-              <MapPin className="mt-0.5 size-4 shrink-0 text-primary" />
-              <dd className="min-w-0 break-words">{getWorkerLocation(worker)}</dd>
-            </div>
-            <div className="flex items-center gap-2">
-              <Hammer className="size-4 shrink-0 text-primary" />
-              <dd>অভিজ্ঞতা {worker.experienceYears} বছর</dd>
-            </div>
-          </dl>
+            <h2 className="break-words text-xl font-bold leading-7">{worker.user.name}</h2>
+
+            <dl className="mt-3 grid gap-2 text-sm leading-6 text-muted-foreground">
+              <div className="flex min-w-0 items-start gap-2">
+                <MapPin className="mt-0.5 size-4 shrink-0 text-primary" />
+                <dd className="min-w-0 break-words">{getWorkerLocation(worker)}</dd>
+              </div>
+              <div className="flex items-center gap-2">
+                <Hammer className="size-4 shrink-0 text-primary" />
+                <dd>অভিজ্ঞতা {worker.experienceYears} বছর</dd>
+              </div>
+            </dl>
+          </div>
         </div>
 
         <div className="grid gap-2 sm:w-auto">
@@ -67,10 +88,10 @@ export function WorkerResultCard({ worker }: WorkerResultCardProps) {
             {worker.user.maskedPhone || 'ফোন নম্বর নিরাপদে রাখা হয়েছে'}
           </div>
           <Button asChild className="w-full sm:w-auto">
-            <a href={`/workers/${worker.id}`} aria-label={`${worker.user.name} এর প্রোফাইল দেখুন`}>
+            <Link href={`/workers/${worker.id}`} aria-label={`${worker.user.name} এর প্রোফাইল দেখুন`}>
               <Eye />
               বিস্তারিত দেখুন
-            </a>
+            </Link>
           </Button>
         </div>
       </div>
