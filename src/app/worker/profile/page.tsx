@@ -110,6 +110,20 @@ export default function WorkerProfilePage() {
     return '';
   }
 
+  function getFormKey() {
+    if (!profile) return 'new-profile';
+
+    return [
+      profile.skill,
+      profile.district,
+      profile.upazila || '',
+      profile.area || '',
+      profile.experienceYears,
+      profile.availability,
+      profile.status,
+    ].join('|');
+  }
+
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setIsSubmitting(true);
@@ -133,6 +147,7 @@ export default function WorkerProfilePage() {
     }
 
     try {
+      const previousStatus = profile?.status;
       const result = await graphqlRequest<{
         upsertMyWorkerProfile: MyWorkerProfile;
       }>(
@@ -151,7 +166,11 @@ export default function WorkerProfilePage() {
       );
 
       setProfile(result.upsertMyWorkerProfile);
-      setStatus('প্রোফাইল জমা হয়েছে। অ্যাডমিন অনুমোদনের পর আপনার প্রোফাইল পাবলিক লিস্টে দেখা যাবে।');
+      setStatus(
+        previousStatus === 'APPROVED'
+          ? 'আপনার পরিবর্তন জমা হয়েছে। তথ্য পরিবর্তনের কারণে প্রোফাইল আবার অ্যাডমিন অনুমোদনের অপেক্ষায় আছে।'
+          : 'প্রোফাইল জমা হয়েছে। অ্যাডমিন অনুমোদনের পর আপনার প্রোফাইল পাবলিক লিস্টে দেখা যাবে।'
+      );
     } catch (error) {
       setStatus(error instanceof Error ? error.message : 'প্রোফাইল জমা দেওয়া যায়নি');
     } finally {
@@ -198,12 +217,18 @@ export default function WorkerProfilePage() {
                 ? 'অনুমোদিত'
                 : profile.status === 'PENDING'
                   ? 'অনুমোদনের অপেক্ষায়'
-                  : 'নিষ্ক্রিয়'}
+                : 'নিষ্ক্রিয়'}
             </Badge>
           </div>
         ) : null}
 
-        <form className="grid gap-4 sm:grid-cols-2" onSubmit={handleSubmit}>
+        {profile?.status === 'APPROVED' ? (
+          <p className="mb-5 rounded-md bg-muted p-3 text-sm leading-6">
+            প্রোফাইলের সেবা, এলাকা বা অভিজ্ঞতা পরিবর্তন করলে সেটি আবার অনুমোদনের জন্য যাবে।
+          </p>
+        ) : null}
+
+        <form key={getFormKey()} className="grid gap-4 sm:grid-cols-2" onSubmit={handleSubmit}>
           <div className="space-y-2">
             <Label htmlFor="skill">সেবা</Label>
             <Input
