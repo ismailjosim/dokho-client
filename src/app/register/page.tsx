@@ -2,7 +2,7 @@
 
 import { FormEvent, useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, UserRoundPlus } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, UserRoundPlus } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -32,29 +32,55 @@ const REQUEST_OTP = /* GraphQL */ `
 
 export default function RegisterPage() {
   const [status, setStatus] = useState('');
+  const [otpHref, setOtpHref] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  function getPhoneError(phone: string) {
+    if (!phone) return 'ফোন নম্বর দিন।';
+    if (!/^01\d{9}$/.test(phone)) return 'বাংলাদেশি ১১ সংখ্যার ফোন নম্বর দিন। যেমন: 017XXXXXXXX';
+    return '';
+  }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setIsSubmitting(true);
     setStatus('');
+    setOtpHref('');
 
     const formData = new FormData(event.currentTarget);
-    const phone = String(formData.get('phone') || '');
+    const phone = String(formData.get('phone') || '').trim();
+    const name = String(formData.get('name') || '').trim();
+    const role = String(formData.get('role') || 'WORKER');
+    const phoneError = getPhoneError(phone);
+
+    if (name.length < 2) {
+      setStatus('কমপক্ষে ২ অক্ষরের নাম দিন।');
+      setIsSubmitting(false);
+      return;
+    }
+
+    if (phoneError) {
+      setStatus(phoneError);
+      setIsSubmitting(false);
+      return;
+    }
 
     try {
       await graphqlRequest(CREATE_USER, {
         input: {
-          name: String(formData.get('name') || ''),
+          name,
           phone,
-          role: String(formData.get('role') || 'CLIENT'),
+          role,
         },
       });
       const otp = await graphqlRequest<{
         requestOtp: { developmentOtp: string | null };
       }>(REQUEST_OTP, { phone });
+      const href = `/verify-otp?phone=${encodeURIComponent(phone)}`;
+
+      setOtpHref(href);
       setStatus(
-        `রেজিস্ট্রেশন সম্পন্ন। OTP পেজে যান। ${
+        `রেজিস্ট্রেশন সম্পন্ন। এখন OTP যাচাই করুন। ${
           otp.requestOtp.developmentOtp ? `ডেভেলপমেন্ট OTP: ${otp.requestOtp.developmentOtp}` : ''
         }`
       );
@@ -64,8 +90,11 @@ export default function RegisterPage() {
           const otp = await graphqlRequest<{
             requestOtp: { developmentOtp: string | null };
           }>(REQUEST_OTP, { phone });
+          const href = `/verify-otp?phone=${encodeURIComponent(phone)}`;
+
+          setOtpHref(href);
           setStatus(
-            `এই ফোন নম্বর দিয়ে আগে অ্যাকাউন্ট তৈরি হয়েছে। OTP পেজে গিয়ে যাচাই করুন। ${
+            `এই ফোন নম্বর দিয়ে আগে অ্যাকাউন্ট তৈরি হয়েছে। নতুন OTP পাঠানো হয়েছে। ${
               otp.requestOtp.developmentOtp
                 ? `ডেভেলপমেন্ট OTP: ${otp.requestOtp.developmentOtp}`
                 : ''
@@ -73,6 +102,7 @@ export default function RegisterPage() {
           );
           return;
         } catch {
+          setOtpHref(`/verify-otp?phone=${encodeURIComponent(phone)}`);
           setStatus('এই ফোন নম্বর দিয়ে আগে অ্যাকাউন্ট তৈরি হয়েছে। OTP পেজে গিয়ে যাচাই করুন।');
           return;
         }
@@ -95,7 +125,7 @@ export default function RegisterPage() {
       <div className="rounded-lg border bg-card p-5 shadow-sm">
         <div className="mb-5 flex items-center gap-2">
           <UserRoundPlus className="size-5 text-primary" />
-          <h1 className="text-2xl font-bold">নতুন অ্যাকাউন্ট</h1>
+          <h1 className="text-2xl font-bold">কর্মী রেজিস্ট্রেশন</h1>
         </div>
         <form className="space-y-4" onSubmit={handleSubmit}>
           <div className="space-y-2">
@@ -104,7 +134,15 @@ export default function RegisterPage() {
           </div>
           <div className="space-y-2">
             <Label htmlFor="phone">ফোন নম্বর</Label>
-            <Input id="phone" name="phone" required placeholder="01XXXXXXXXX" />
+            <Input
+              id="phone"
+              name="phone"
+              required
+              inputMode="tel"
+              maxLength={11}
+              pattern="01[0-9]{9}"
+              placeholder="01XXXXXXXXX"
+            />
           </div>
           <div className="space-y-2">
             <Label htmlFor="role">অ্যাকাউন্ট টাইপ</Label>
@@ -112,10 +150,10 @@ export default function RegisterPage() {
               id="role"
               name="role"
               className="h-11 w-full rounded-md border border-input bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              defaultValue="CLIENT"
+              defaultValue="WORKER"
             >
-              <option value="CLIENT">ক্লায়েন্ট</option>
               <option value="WORKER">কর্মী</option>
+              <option value="CLIENT">ক্লায়েন্ট</option>
             </select>
           </div>
           <Button className="w-full" disabled={isSubmitting}>
@@ -123,6 +161,14 @@ export default function RegisterPage() {
           </Button>
         </form>
         {status ? <p className="mt-4 rounded-md bg-muted p-3 text-sm">{status}</p> : null}
+        {otpHref ? (
+          <Button asChild className="mt-3 w-full">
+            <Link href={otpHref}>
+              <CheckCircle2 />
+              OTP যাচাই করুন
+            </Link>
+          </Button>
+        ) : null}
         <Button variant="link" asChild className="mt-3 px-0">
           <Link href="/verify-otp">OTP আছে? যাচাই করুন</Link>
         </Button>

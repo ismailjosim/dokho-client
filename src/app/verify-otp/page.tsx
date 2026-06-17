@@ -33,24 +33,48 @@ const VERIFY_OTP = /* GraphQL */ `
   }
 `;
 
+function getInitialPhone() {
+  if (typeof window === 'undefined') return '';
+  return new URLSearchParams(window.location.search).get('phone') || '';
+}
+
 export default function VerifyOtpPage() {
   const router = useRouter();
-  const [phone, setPhone] = useState('');
+  const [phone, setPhone] = useState(getInitialPhone);
   const [otp, setOtp] = useState('');
   const [status, setStatus] = useState('');
   const [nextHref, setNextHref] = useState('');
   const [isSendingOtp, setIsSendingOtp] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  function getPhoneError() {
+    if (!phone.trim()) return 'ফোন নম্বর দিন।';
+    if (!/^01\d{9}$/.test(phone.trim())) return 'বাংলাদেশি ১১ সংখ্যার ফোন নম্বর দিন।';
+    return '';
+  }
+
+  function getOtpError() {
+    if (!otp.trim()) return 'OTP দিন।';
+    if (!/^\d{6}$/.test(otp.trim())) return 'OTP অবশ্যই ৬ সংখ্যার হতে হবে।';
+    return '';
+  }
+
   async function handleSendOtp() {
     setIsSendingOtp(true);
     setStatus('');
     setNextHref('');
+    const phoneError = getPhoneError();
+
+    if (phoneError) {
+      setStatus(phoneError);
+      setIsSendingOtp(false);
+      return;
+    }
 
     try {
       const result = await graphqlRequest<{
         requestOtp: { developmentOtp: string | null; expiresInSeconds: number };
-      }>(REQUEST_OTP, { phone });
+      }>(REQUEST_OTP, { phone: phone.trim() });
 
       setStatus(
         `OTP পাঠানো হয়েছে। ${
@@ -71,13 +95,21 @@ export default function VerifyOtpPage() {
     setIsSubmitting(true);
     setStatus('');
     setNextHref('');
+    const phoneError = getPhoneError();
+    const otpError = getOtpError();
+
+    if (phoneError || otpError) {
+      setStatus(phoneError || otpError);
+      setIsSubmitting(false);
+      return;
+    }
 
     try {
       const result = await graphqlRequest<{
         verifyOtp: { accessToken: string; user: { name: string; role: string } };
       }>(VERIFY_OTP, {
-        phone,
-        otp,
+        phone: phone.trim(),
+        otp: otp.trim(),
       });
 
       authTokenStorage.set(result.verifyOtp.accessToken);
@@ -118,6 +150,9 @@ export default function VerifyOtpPage() {
               required
               placeholder="01XXXXXXXXX"
               value={phone}
+              inputMode="tel"
+              maxLength={11}
+              pattern="01[0-9]{9}"
               onChange={(event) => setPhone(event.target.value)}
             />
           </div>
@@ -128,7 +163,7 @@ export default function VerifyOtpPage() {
             disabled={isSendingOtp || !phone}
             onClick={handleSendOtp}
           >
-            OTP পাঠান
+            {isSendingOtp ? 'OTP পাঠানো হচ্ছে' : 'OTP পাঠান'}
           </Button>
           <div className="space-y-2">
             <Label htmlFor="otp">OTP</Label>
@@ -141,11 +176,11 @@ export default function VerifyOtpPage() {
               minLength={6}
               placeholder="123456"
               value={otp}
-              onChange={(event) => setOtp(event.target.value)}
+              onChange={(event) => setOtp(event.target.value.replace(/\D/g, '').slice(0, 6))}
             />
           </div>
           <Button className="w-full" disabled={isSubmitting}>
-            যাচাই করুন
+            {isSubmitting ? 'যাচাই হচ্ছে' : 'যাচাই করুন'}
           </Button>
         </form>
         {status ? <p className="mt-4 rounded-md bg-muted p-3 text-sm">{status}</p> : null}
