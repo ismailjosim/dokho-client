@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -81,7 +81,7 @@ export default function AdminDashboardPage() {
   const [hasLoaded, setHasLoaded] = useState(false);
   const [activeWorkerId, setActiveWorkerId] = useState('');
 
-  async function loadPendingWorkers() {
+  const loadPendingWorkers = useCallback(async () => {
     const token = authTokenStorage.get();
 
     if (!token) {
@@ -107,7 +107,7 @@ export default function AdminDashboardPage() {
       setIsLoading(false);
       setHasLoaded(true);
     }
-  }
+  }, [router]);
 
   async function moderateWorker(worker: PendingWorker, action: 'approve' | 'deactivate') {
     const token = authTokenStorage.get();
@@ -154,7 +154,7 @@ export default function AdminDashboardPage() {
     }, 0);
 
     return () => window.clearTimeout(timer);
-  }, []);
+  }, [loadPendingWorkers]);
 
   return (
     <main className="min-h-screen bg-background">

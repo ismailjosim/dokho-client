@@ -93,7 +93,11 @@ export default function WorkerProfilePage() {
   }, []);
 
   useEffect(() => {
-    void loadProfile();
+    const timer = window.setTimeout(() => {
+      void loadProfile();
+    }, 0);
+
+    return () => window.clearTimeout(timer);
   }, [loadProfile]);
 
   function getFormError(formData: FormData) {

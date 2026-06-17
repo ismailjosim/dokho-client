@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import Link from 'next/link';
 import {
   ArrowRight,
   BadgeCheck,
@@ -61,15 +62,15 @@ export default function Home() {
             <a href="#search" className="hover:text-foreground">
               কর্মী খুঁজুন
             </a>
-            <a href="/register" className="hover:text-foreground">
+            <Link href="/register" className="hover:text-foreground">
               কর্মী হোন
-            </a>
-            <a href="/verify-otp" className="hover:text-foreground">
+            </Link>
+            <Link href="/verify-otp" className="hover:text-foreground">
               লগইন
-            </a>
-            <a href="/admin/login" className="hover:text-foreground">
+            </Link>
+            <Link href="/admin/login" className="hover:text-foreground">
               অ্যাডমিন
-            </a>
+            </Link>
           </nav>
           <Button size="sm">
             <Phone />
@@ -94,16 +95,16 @@ export default function Home() {
             </p>
             <div className="mt-6 flex flex-col gap-3 sm:flex-row">
               <Button size="lg" asChild>
-                <a href="/workers">
+                <Link href="/workers">
                   <Search />
                   এখনই খুঁজুন
-                </a>
+                </Link>
               </Button>
               <Button variant="outline" size="lg" asChild>
-                <a href="/register">
+                <Link href="/register">
                   <UserRoundPlus />
                   কর্মী হিসেবে যোগ দিন
-                </a>
+                </Link>
               </Button>
             </div>
           </div>
@@ -240,10 +241,10 @@ export default function Home() {
             </p>
           </div>
           <Button variant="secondary" size="lg" asChild>
-            <a href="/admin/login">
+            <Link href="/admin/login">
               ড্যাশবোর্ড লগইন
               <ArrowRight />
-            </a>
+            </Link>
           </Button>
         </div>
       </section>
