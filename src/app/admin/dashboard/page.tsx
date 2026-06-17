@@ -7,6 +7,8 @@ import {
   ArrowLeft,
   CheckCircle2,
   Clock3,
+  CreditCard,
+  FileImage,
   Loader2,
   MapPin,
   Phone,
@@ -27,6 +29,9 @@ type PendingWorker = {
   district: string;
   upazila?: string | null;
   area?: string | null;
+  profilePhotoUrl?: string | null;
+  nidFrontUrl?: string | null;
+  nidBackUrl?: string | null;
   experienceYears: number;
   availability: 'AVAILABLE' | 'NOT_AVAILABLE';
   status: 'PENDING' | 'APPROVED' | 'DEACTIVATED';
@@ -36,16 +41,48 @@ type PendingWorker = {
   };
 };
 
+type PendingPayment = {
+  id: string;
+  method: 'BKASH' | 'NAGAD' | 'SSLCOMMERZ';
+  plan: 'SINGLE_CONTACT' | 'BULK_10_CONTACTS';
+  amount: number;
+  credits: number;
+  senderPhone?: string | null;
+  transactionId?: string | null;
+  status: 'PENDING' | 'APPROVED' | 'REJECTED';
+  user: {
+    name: string;
+    phone: string;
+  };
+};
+
 const PENDING_WORKERS = /* GraphQL */ `
-  query PendingWorkerProfiles {
+  query AdminDashboardData {
     pendingWorkerProfiles {
       id
       skill
       district
       upazila
       area
+      profilePhotoUrl
+      nidFrontUrl
+      nidBackUrl
       experienceYears
       availability
+      status
+      user {
+        name
+        phone
+      }
+    }
+    pendingPaymentRequests {
+      id
+      method
+      plan
+      amount
+      credits
+      senderPhone
+      transactionId
       status
       user {
         name
@@ -73,9 +110,28 @@ const DEACTIVATE_WORKER = /* GraphQL */ `
   }
 `;
 
+const APPROVE_PAYMENT = /* GraphQL */ `
+  mutation ApprovePaymentRequest($id: ID!) {
+    approvePaymentRequest(id: $id) {
+      id
+      status
+    }
+  }
+`;
+
+const REJECT_PAYMENT = /* GraphQL */ `
+  mutation RejectPaymentRequest($id: ID!) {
+    rejectPaymentRequest(id: $id) {
+      id
+      status
+    }
+  }
+`;
+
 export default function AdminDashboardPage() {
   const router = useRouter();
   const [workers, setWorkers] = useState<PendingWorker[]>([]);
+  const [payments, setPayments] = useState<PendingPayment[]>([]);
   const [status, setStatus] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [hasLoaded, setHasLoaded] = useState(false);
@@ -94,13 +150,21 @@ export default function AdminDashboardPage() {
     setStatus('');
 
     try {
-      const result = await graphqlRequest<{ pendingWorkerProfiles: PendingWorker[] }>(
+      const result = await graphqlRequest<{
+        pendingWorkerProfiles: PendingWorker[];
+        pendingPaymentRequests: PendingPayment[];
+      }>(
         PENDING_WORKERS,
         undefined,
         token
       );
       setWorkers(result.pendingWorkerProfiles);
-      setStatus(result.pendingWorkerProfiles.length ? '' : 'এখন কোনো অপেক্ষমান প্রোফাইল নেই।');
+      setPayments(result.pendingPaymentRequests);
+      setStatus(
+        result.pendingWorkerProfiles.length || result.pendingPaymentRequests.length
+          ? ''
+          : 'এখন কোনো অপেক্ষমান প্রোফাইল বা পেমেন্ট নেই।'
+      );
     } catch (error) {
       setStatus(error instanceof Error ? error.message : 'প্রোফাইল লোড করা যায়নি');
     } finally {
@@ -143,6 +207,37 @@ export default function AdminDashboardPage() {
       await loadPendingWorkers();
     } catch (error) {
       setStatus(error instanceof Error ? error.message : 'অ্যাকশন সম্পন্ন হয়নি');
+    } finally {
+      setActiveWorkerId('');
+    }
+  }
+
+  async function moderatePayment(payment: PendingPayment, action: 'approve' | 'reject') {
+    const token = authTokenStorage.get();
+
+    if (!token) {
+      setStatus('আগে অ্যাডমিন হিসেবে লগইন করুন।');
+      router.push('/admin/login');
+      return;
+    }
+
+    setActiveWorkerId(payment.id);
+    setStatus('');
+
+    try {
+      await graphqlRequest(
+        action === 'approve' ? APPROVE_PAYMENT : REJECT_PAYMENT,
+        { id: payment.id },
+        token
+      );
+      setStatus(
+        action === 'approve'
+          ? `${payment.user.name} এর পেমেন্ট অনুমোদিত হয়েছে।`
+          : `${payment.user.name} এর পেমেন্ট বাতিল হয়েছে।`
+      );
+      await loadPendingWorkers();
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : 'পেমেন্ট অ্যাকশন সম্পন্ন হয়নি');
     } finally {
       setActiveWorkerId('');
     }
@@ -193,7 +288,7 @@ export default function AdminDashboardPage() {
         <div className="mb-4 grid gap-3 sm:grid-cols-3">
           <div className="rounded-lg border bg-card p-4">
             <p className="text-sm text-muted-foreground">অপেক্ষমান</p>
-            <p className="mt-1 text-2xl font-bold">{workers.length}</p>
+            <p className="mt-1 text-2xl font-bold">{workers.length + payments.length}</p>
           </div>
           <div className="rounded-lg border bg-card p-4">
             <p className="text-sm text-muted-foreground">অ্যাকশন</p>
@@ -214,14 +309,63 @@ export default function AdminDashboardPage() {
           </div>
         ) : null}
 
-        {!isLoading && hasLoaded && workers.length === 0 ? (
+        {!isLoading && hasLoaded && workers.length === 0 && payments.length === 0 ? (
           <div className="rounded-lg border bg-card p-6 text-center shadow-sm">
             <Clock3 className="mx-auto mb-3 size-8 text-muted-foreground" />
-            <h2 className="text-lg font-bold">কোনো অপেক্ষমান প্রোফাইল নেই</h2>
+            <h2 className="text-lg font-bold">কোনো অপেক্ষমান কাজ নেই</h2>
             <p className="mt-2 text-sm text-muted-foreground">
-              নতুন কর্মী প্রোফাইল জমা হলে এখানে দেখা যাবে।
+              নতুন কর্মী প্রোফাইল বা পেমেন্ট জমা হলে এখানে দেখা যাবে।
             </p>
           </div>
+        ) : null}
+
+        {payments.length ? (
+          <section className="mb-6 space-y-4">
+            <h2 className="flex items-center gap-2 text-xl font-bold">
+              <CreditCard className="size-5 text-primary" />
+              পেমেন্ট যাচাই
+            </h2>
+            {payments.map((payment) => (
+              <article key={payment.id} className="rounded-lg border bg-card p-4 shadow-sm">
+                <div className="mb-3 flex flex-wrap gap-2">
+                  <Badge variant="outline">পেমেন্ট অপেক্ষমান</Badge>
+                  <Badge variant="secondary">{payment.method}</Badge>
+                  <Badge variant="success">{payment.credits} ক্রেডিট</Badge>
+                </div>
+                <h3 className="text-lg font-bold">{payment.user.name}</h3>
+                <div className="mt-3 grid gap-2 text-sm text-muted-foreground sm:grid-cols-2">
+                  <p>অ্যাকাউন্ট: {payment.user.phone}</p>
+                  <p>প্ল্যান: {payment.plan === 'SINGLE_CONTACT' ? '১ প্রোফাইল' : '১০ প্রোফাইল'}</p>
+                  <p>টাকা: ৳{payment.amount}</p>
+                  <p>প্রেরক নম্বর: {payment.senderPhone || 'দেওয়া হয়নি'}</p>
+                  <p className="sm:col-span-2">
+                    ট্রানজেকশন আইডি: {payment.transactionId || 'দেওয়া হয়নি'}
+                  </p>
+                </div>
+                <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+                  <Button
+                    onClick={() => moderatePayment(payment, 'approve')}
+                    disabled={Boolean(activeWorkerId)}
+                  >
+                    {activeWorkerId === payment.id ? (
+                      <Loader2 className="animate-spin" />
+                    ) : (
+                      <CheckCircle2 />
+                    )}
+                    অনুমোদন
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => moderatePayment(payment, 'reject')}
+                    disabled={Boolean(activeWorkerId)}
+                  >
+                    {activeWorkerId === payment.id ? <Loader2 className="animate-spin" /> : <XCircle />}
+                    বাতিল
+                  </Button>
+                </div>
+              </article>
+            ))}
+          </section>
         ) : null}
 
         <div className="space-y-4">
@@ -247,6 +391,32 @@ export default function AdminDashboardPage() {
                 <p className="flex items-center gap-2">
                   <UserRound className="size-4 text-primary" />
                   {bn.field.experience}: {worker.experienceYears} বছর
+                </p>
+                <p className="flex items-center gap-2">
+                  <FileImage className="size-4 text-primary" />
+                  ছবি: {worker.profilePhotoUrl ? (
+                    <a className="text-primary hover:underline" href={worker.profilePhotoUrl} target="_blank" rel="noreferrer">
+                      দেখুন
+                    </a>
+                  ) : (
+                    'নেই'
+                  )}
+                </p>
+                <p className="flex items-center gap-2 sm:col-span-2">
+                  <FileImage className="size-4 text-primary" />
+                  NID:{' '}
+                  {worker.nidFrontUrl ? (
+                    <a className="text-primary hover:underline" href={worker.nidFrontUrl} target="_blank" rel="noreferrer">
+                      সামনের ছবি
+                    </a>
+                  ) : (
+                    'সামনের ছবি নেই'
+                  )}
+                  {worker.nidBackUrl ? (
+                    <a className="text-primary hover:underline" href={worker.nidBackUrl} target="_blank" rel="noreferrer">
+                      পেছনের ছবি
+                    </a>
+                  ) : null}
                 </p>
               </div>
               <div className="mt-4 flex flex-col gap-2 sm:flex-row">

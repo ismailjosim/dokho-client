@@ -2,7 +2,7 @@
 
 import { FormEvent, useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, CheckCircle2, Clock3, Hammer, Phone, UserRound } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, Clock3, Hammer, ImageUp, Phone, UserRound } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -33,6 +33,12 @@ type MyWorkerProfile = {
   district: string;
   upazila?: string | null;
   area?: string | null;
+  profilePhotoUrl?: string | null;
+  profilePhotoPublicId?: string | null;
+  nidFrontUrl?: string | null;
+  nidFrontPublicId?: string | null;
+  nidBackUrl?: string | null;
+  nidBackPublicId?: string | null;
   experienceYears: number;
   availability: 'AVAILABLE' | 'NOT_AVAILABLE';
   status: 'PENDING' | 'APPROVED' | 'DEACTIVATED';
@@ -50,6 +56,12 @@ const PROFILE_QUERY = /* GraphQL */ `
       district
       upazila
       area
+      profilePhotoUrl
+      profilePhotoPublicId
+      nidFrontUrl
+      nidFrontPublicId
+      nidBackUrl
+      nidBackPublicId
       experienceYears
       availability
       status
@@ -65,6 +77,12 @@ const UPSERT_PROFILE = /* GraphQL */ `
       district
       upazila
       area
+      profilePhotoUrl
+      profilePhotoPublicId
+      nidFrontUrl
+      nidFrontPublicId
+      nidBackUrl
+      nidBackPublicId
       experienceYears
       status
       availability
@@ -72,12 +90,53 @@ const UPSERT_PROFILE = /* GraphQL */ `
   }
 `;
 
+const UPLOAD_IMAGE = /* GraphQL */ `
+  mutation UploadImage($input: UploadImageInput!) {
+    uploadImage(input: $input) {
+      url
+      publicId
+    }
+  }
+`;
+
+type WorkerMediaField = 'profilePhoto' | 'nidFront' | 'nidBack';
+
+type WorkerMedia = {
+  profilePhotoUrl: string;
+  profilePhotoPublicId: string;
+  nidFrontUrl: string;
+  nidFrontPublicId: string;
+  nidBackUrl: string;
+  nidBackPublicId: string;
+};
+
+const emptyMedia: WorkerMedia = {
+  profilePhotoUrl: '',
+  profilePhotoPublicId: '',
+  nidFrontUrl: '',
+  nidFrontPublicId: '',
+  nidBackUrl: '',
+  nidBackPublicId: '',
+};
+
+function readFileAsDataUrl(file: File) {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.onload = () => resolve(String(reader.result || ''));
+    reader.onerror = () => reject(new Error('ছবি পড়া যায়নি'));
+    reader.readAsDataURL(file);
+  });
+}
+
 export default function WorkerProfilePage() {
   const [account, setAccount] = useState<AccountUser | null>(null);
   const [profile, setProfile] = useState<MyWorkerProfile | null>(null);
   const [status, setStatus] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [uploadingField, setUploadingField] = useState<WorkerMediaField | ''>('');
+  const [media, setMedia] = useState<WorkerMedia>(emptyMedia);
   const [serviceOptions, setServiceOptions] = useState<SelectOption[]>([]);
   const [districtOptions, setDistrictOptions] = useState<SelectOption[]>([]);
   const [upazilaOptions, setUpazilaOptions] = useState<SelectOption[]>([]);
@@ -102,6 +161,14 @@ export default function WorkerProfilePage() {
 
       setAccount(result.me);
       setProfile(result.myWorkerProfile);
+      setMedia({
+        profilePhotoUrl: result.myWorkerProfile?.profilePhotoUrl || '',
+        profilePhotoPublicId: result.myWorkerProfile?.profilePhotoPublicId || '',
+        nidFrontUrl: result.myWorkerProfile?.nidFrontUrl || '',
+        nidFrontPublicId: result.myWorkerProfile?.nidFrontPublicId || '',
+        nidBackUrl: result.myWorkerProfile?.nidBackUrl || '',
+        nidBackPublicId: result.myWorkerProfile?.nidBackPublicId || '',
+      });
       setStatus(result.myWorkerProfile?.status === 'PENDING' ? 'আপনার প্রোফাইল অ্যাডমিন অনুমোদনের অপেক্ষায় আছে।' : '');
     } catch (error) {
       setStatus(error instanceof Error ? error.message : 'প্রোফাইল তথ্য আনা যায়নি');
@@ -192,6 +259,56 @@ export default function WorkerProfilePage() {
     return '';
   }
 
+  async function handleImageUpload(field: WorkerMediaField, file?: File) {
+    if (!file) return;
+
+    const token = authTokenStorage.get();
+
+    if (!token) {
+      setStatus('আগে OTP দিয়ে লগইন করুন।');
+      return;
+    }
+
+    if (!file.type.startsWith('image/')) {
+      setStatus('শুধু ছবি আপলোড করুন।');
+      return;
+    }
+
+    if (file.size > 4 * 1024 * 1024) {
+      setStatus('ছবির সাইজ ৪MB এর কম হতে হবে।');
+      return;
+    }
+
+    setUploadingField(field);
+    setStatus('');
+
+    try {
+      const result = await graphqlRequest<{ uploadImage: { url: string; publicId: string } }>(
+        UPLOAD_IMAGE,
+        {
+          input: {
+            file: await readFileAsDataUrl(file),
+            folder: field === 'profilePhoto' ? 'PROFILE_PHOTOS' : 'NID_DOCUMENTS',
+          },
+        },
+        token
+      );
+      const urlKey = `${field}Url` as keyof WorkerMedia;
+      const publicIdKey = `${field}PublicId` as keyof WorkerMedia;
+
+      setMedia((currentMedia) => ({
+        ...currentMedia,
+        [urlKey]: result.uploadImage.url,
+        [publicIdKey]: result.uploadImage.publicId,
+      }));
+      setStatus('ছবি আপলোড হয়েছে। প্রোফাইল জমা দিলে অ্যাডমিন যাচাই করতে পারবেন।');
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : 'ছবি আপলোড হয়নি');
+    } finally {
+      setUploadingField('');
+    }
+  }
+
   function getFormKey() {
     if (!profile) return 'new-profile';
 
@@ -200,6 +317,9 @@ export default function WorkerProfilePage() {
       profile.district,
       profile.upazila || '',
       profile.area || '',
+      media.profilePhotoUrl,
+      media.nidFrontUrl,
+      media.nidBackUrl,
       profile.experienceYears,
       profile.availability,
       profile.status,
@@ -240,6 +360,12 @@ export default function WorkerProfilePage() {
             district: selectedDistrict?.value || '',
             upazila: selectedUpazila?.value || '',
             area: String(formData.get('area') || '').trim(),
+            profilePhotoUrl: media.profilePhotoUrl,
+            profilePhotoPublicId: media.profilePhotoPublicId,
+            nidFrontUrl: media.nidFrontUrl,
+            nidFrontPublicId: media.nidFrontPublicId,
+            nidBackUrl: media.nidBackUrl,
+            nidBackPublicId: media.nidBackPublicId,
             experienceYears: Number(formData.get('experienceYears') || 0),
             availability: String(formData.get('availability') || 'AVAILABLE'),
           },
@@ -362,6 +488,60 @@ export default function WorkerProfilePage() {
             <Input id="area" name="area" placeholder="মিরপুর ১০" defaultValue={profile?.area || ''} />
           </div>
           <div className="space-y-2">
+            <Label htmlFor="profilePhoto">প্রোফাইল ছবি</Label>
+            <Input
+              id="profilePhoto"
+              type="file"
+              accept="image/*"
+              onChange={(event) => void handleImageUpload('profilePhoto', event.target.files?.[0])}
+            />
+            {media.profilePhotoUrl ? (
+              <a
+                className="block text-sm font-medium text-primary hover:underline"
+                href={media.profilePhotoUrl}
+                target="_blank"
+              >
+                আপলোড করা ছবি দেখুন
+              </a>
+            ) : null}
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="nidFront">NID সামনের ছবি</Label>
+            <Input
+              id="nidFront"
+              type="file"
+              accept="image/*"
+              onChange={(event) => void handleImageUpload('nidFront', event.target.files?.[0])}
+            />
+            {media.nidFrontUrl ? (
+              <a
+                className="block text-sm font-medium text-primary hover:underline"
+                href={media.nidFrontUrl}
+                target="_blank"
+              >
+                NID সামনের ছবি দেখুন
+              </a>
+            ) : null}
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="nidBack">NID পেছনের ছবি</Label>
+            <Input
+              id="nidBack"
+              type="file"
+              accept="image/*"
+              onChange={(event) => void handleImageUpload('nidBack', event.target.files?.[0])}
+            />
+            {media.nidBackUrl ? (
+              <a
+                className="block text-sm font-medium text-primary hover:underline"
+                href={media.nidBackUrl}
+                target="_blank"
+              >
+                NID পেছনের ছবি দেখুন
+              </a>
+            ) : null}
+          </div>
+          <div className="space-y-2">
             <Label htmlFor="experienceYears">অভিজ্ঞতা</Label>
             <Input
               id="experienceYears"
@@ -388,6 +568,12 @@ export default function WorkerProfilePage() {
             {isSubmitting ? 'জমা হচ্ছে' : 'প্রোফাইল জমা দিন'}
           </Button>
         </form>
+        {uploadingField ? (
+          <p className="mt-4 flex items-center gap-2 rounded-md bg-muted p-3 text-sm">
+            <ImageUp className="size-4 animate-pulse text-primary" />
+            ছবি আপলোড হচ্ছে...
+          </p>
+        ) : null}
         {status ? <p className="mt-4 rounded-md bg-muted p-3 text-sm">{status}</p> : null}
       </div>
     </main>

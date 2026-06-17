@@ -19,6 +19,10 @@ const errorMessages: Record<string, string> = {
   'Worker access required': 'এই কাজের জন্য কর্মী হিসেবে লগইন করুন।',
   'Admin access required': 'এই কাজের জন্য অ্যাডমিন হিসেবে লগইন করুন।',
   'Invalid admin credentials': 'অ্যাডমিন ফোন নম্বর বা পাসওয়ার্ড সঠিক নয়।',
+  'Cloudinary credentials are not configured': 'Cloudinary সেটআপ করা নেই। .env ফাইল চেক করুন।',
+  'Image must be a data URI': 'ছবির ফাইল সঠিক নয়। আবার আপলোড করুন।',
+  'Payment credit required': 'যোগাযোগ নম্বর দেখতে আগে পেমেন্ট ক্রেডিট কিনুন।',
+  'Login required': 'এই কাজের জন্য আগে লগইন করুন।',
   'Request validation failed': 'দেওয়া তথ্য ঠিক নেই। আবার দেখে জমা দিন।',
 };
 
