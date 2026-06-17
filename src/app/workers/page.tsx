@@ -2,7 +2,7 @@
 
 import { FormEvent, useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Search, SearchX } from 'lucide-react';
+import { AlertCircle, ArrowLeft, Loader2, Search, SearchX } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -129,19 +129,33 @@ export default function WorkersPage() {
             />
           </div>
           <Button className="self-end" disabled={isLoading}>
-            <Search />
-            খুঁজুন
+            {isLoading ? <Loader2 className="animate-spin" /> : <Search />}
+            {isLoading ? 'খোঁজা হচ্ছে' : 'খুঁজুন'}
           </Button>
         </form>
       </div>
 
-      {status ? <p className="mb-4 rounded-md bg-muted p-3 text-sm">{status}</p> : null}
+      {status ? (
+        <div className="mb-4 flex items-start gap-2 rounded-md bg-muted p-3 text-sm">
+          {hasSearched ? <AlertCircle className="mt-0.5 size-4 shrink-0 text-muted-foreground" /> : null}
+          <p>{status}</p>
+        </div>
+      ) : null}
 
-      <div className="space-y-4">
-        {workers.map((worker) => (
-          <WorkerResultCard key={worker.id} worker={worker} />
-        ))}
-      </div>
+      {isLoading ? (
+        <div className="rounded-lg border bg-card p-6 text-center shadow-sm">
+          <Loader2 className="mx-auto mb-3 size-8 animate-spin text-primary" />
+          <p className="text-sm text-muted-foreground">অনুমোদিত কর্মীদের তালিকা খোঁজা হচ্ছে...</p>
+        </div>
+      ) : null}
+
+      {!isLoading ? (
+        <div className="space-y-4">
+          {workers.map((worker) => (
+            <WorkerResultCard key={worker.id} worker={worker} />
+          ))}
+        </div>
+      ) : null}
 
       {hasSearched && !isLoading && !status && workers.length === 0 ? (
         <div className="rounded-lg border bg-card p-6 text-center shadow-sm">
