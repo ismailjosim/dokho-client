@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { AlertCircle, ArrowLeft, Filter, Loader2, Search, SearchX } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
+import { LanguageSwitcher } from '@/components/site/language-switcher';
+import { ThemeToggle } from '@/components/site/theme-toggle';
 import { Label } from '@/components/ui/label';
 import { SelectField } from '@/components/ui/select-field';
 import { WorkerResultCard, type WorkerResult } from '@/components/workers/worker-result-card';
@@ -50,7 +52,7 @@ function getInitialFilters() {
 
 export default function WorkersPage() {
   const [workers, setWorkers] = useState<WorkerResult[]>([]);
-  const [status, setStatus] = useState('সার্চ করলে অনুমোদিত কর্মীদের তালিকা দেখা যাবে।');
+  const [status, setStatus] = useState('সার্চ করলে ভেরিফাইড কর্মীদের তালিকা দেখা যাবে।');
   const [hasSearched, setHasSearched] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [initialFilters] = useState(getInitialFilters);
@@ -127,12 +129,18 @@ export default function WorkersPage() {
     <main className="min-h-screen bg-background">
       <section className="border-b bg-foreground text-white">
         <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
-          <Button variant="secondary" asChild className="mb-6 w-fit">
-            <Link href="/">
-              <ArrowLeft />
-              হোমে ফিরুন
-            </Link>
-          </Button>
+          <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <Button variant="secondary" asChild className="w-fit">
+              <Link href="/">
+                <ArrowLeft />
+                হোমে ফিরুন
+              </Link>
+            </Button>
+            <div className="flex items-center gap-2">
+              <LanguageSwitcher />
+              <ThemeToggle />
+            </div>
+          </div>
           <div className="max-w-3xl">
             <p className="mb-2 flex items-center gap-2 text-sm font-semibold text-white/72">
               <Filter className="size-4" />
@@ -198,7 +206,7 @@ export default function WorkersPage() {
         {isLoading ? (
           <div className="rounded-lg border bg-card p-6 text-center shadow-sm">
             <Loader2 className="mx-auto mb-3 size-8 animate-spin text-primary" />
-            <p className="text-sm text-muted-foreground">অনুমোদিত কর্মীদের তালিকা খোঁজা হচ্ছে...</p>
+            <p className="text-sm text-muted-foreground">ভেরিফাইড কর্মীদের তালিকা খোঁজা হচ্ছে...</p>
           </div>
         ) : null}
 
@@ -213,7 +221,7 @@ export default function WorkersPage() {
         {hasSearched && !isLoading && !status && workers.length === 0 ? (
           <div className="rounded-lg border bg-card p-6 text-center shadow-sm">
             <SearchX className="mx-auto mb-3 size-8 text-muted-foreground" />
-            <h2 className="text-lg font-bold">কোনো অনুমোদিত কর্মী পাওয়া যায়নি</h2>
+            <h2 className="text-lg font-bold">কোনো ভেরিফাইড কর্মী পাওয়া যায়নি</h2>
             <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-muted-foreground">
               সেবা বা জেলার নাম একটু পরিবর্তন করে আবার খুঁজে দেখুন।
             </p>

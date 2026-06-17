@@ -55,7 +55,7 @@ export function WorkerResultCard({ worker }: WorkerResultCardProps) {
             <div className="mb-3 flex flex-wrap gap-2">
               <Badge variant="success">
                 <BadgeCheck />
-                অনুমোদিত
+                ভেরিফাইড
               </Badge>
               <Badge variant="secondary">
                 <Hammer />

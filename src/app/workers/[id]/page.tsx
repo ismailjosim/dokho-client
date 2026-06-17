@@ -20,6 +20,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { LanguageSwitcher } from '@/components/site/language-switcher';
+import { ThemeToggle } from '@/components/site/theme-toggle';
 import { authTokenStorage, graphqlRequest } from '@/services/graphql/client';
 
 type WorkerProfileDetails = {
@@ -219,12 +221,18 @@ export default function WorkerDetailsPage() {
     <main className="min-h-screen bg-background">
       <section className="border-b bg-foreground text-white">
         <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
-          <Button variant="secondary" asChild className="mb-6 w-fit">
-            <Link href="/workers">
-              <ArrowLeft />
-              কর্মী তালিকায় ফিরুন
-            </Link>
-          </Button>
+          <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <Button variant="secondary" asChild className="w-fit">
+              <Link href="/workers">
+                <ArrowLeft />
+                কর্মী তালিকায় ফিরুন
+              </Link>
+            </Button>
+            <div className="flex items-center gap-2">
+              <LanguageSwitcher />
+              <ThemeToggle />
+            </div>
+          </div>
           <p className="flex items-center gap-2 text-sm font-semibold text-white/72">
             <ShieldCheck className="size-4" />
             যাচাইকৃত কর্মী প্রোফাইল
@@ -268,7 +276,7 @@ export default function WorkerDetailsPage() {
                   <div className="mb-4 flex flex-wrap gap-2">
                     <Badge variant="success">
                       <BadgeCheck />
-                      অনুমোদিত
+                      ভেরিফাইড
                     </Badge>
                     <Badge variant="secondary">{worker.skill}</Badge>
                     <Badge variant={worker.availability === 'AVAILABLE' ? 'success' : 'outline'}>

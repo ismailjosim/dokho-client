@@ -201,7 +201,7 @@ export default function AdminDashboardPage() {
       );
       setStatus(
         action === 'approve'
-          ? `${worker.user.name} এর প্রোফাইল অনুমোদিত হয়েছে।`
+          ? `${worker.user.name} এর প্রোফাইল ভেরিফাইড হয়েছে।`
           : `${worker.user.name} এর প্রোফাইল ডিঅ্যাক্টিভ হয়েছে।`
       );
       await loadPendingWorkers();
@@ -232,7 +232,7 @@ export default function AdminDashboardPage() {
       );
       setStatus(
         action === 'approve'
-          ? `${payment.user.name} এর পেমেন্ট অনুমোদিত হয়েছে।`
+          ? `${payment.user.name} এর পেমেন্ট ভেরিফাইড হয়েছে।`
           : `${payment.user.name} এর পেমেন্ট বাতিল হয়েছে।`
       );
       await loadPendingWorkers();

@@ -29,7 +29,7 @@ export const bn = {
     availability: 'অবস্থা',
   },
   status: {
-    approved: 'অনুমোদিত',
+    approved: 'ভেরিফাইড',
     pending: 'অপেক্ষমান',
     deactivated: 'ডিঅ্যাক্টিভ',
     available: 'কাজ নিতে পারবেন',

@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Geist_Mono, Hind_Siliguri } from 'next/font/google';
+import { AppProviders } from '@/components/providers/app-providers';
 import './globals.css';
 
 const hindSiliguri = Hind_Siliguri({
@@ -24,8 +25,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="bn" className={`${hindSiliguri.variable} ${geistMono.variable}`}>
-      <body className="min-h-screen">{children}</body>
+    <html
+      lang="bn"
+      className={`${hindSiliguri.variable} ${geistMono.variable}`}
+      suppressHydrationWarning
+    >
+      <body className="min-h-screen">
+        <AppProviders>{children}</AppProviders>
+      </body>
     </html>
   );
 }

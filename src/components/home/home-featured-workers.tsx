@@ -41,7 +41,7 @@ export function HomeFeaturedWorkers() {
         const result = await graphqlRequest<{ workers: WorkerResult[] }>(FEATURED_WORKERS_QUERY);
 
         setWorkers(result.workers);
-        setStatus(result.workers.length ? '' : 'এখনো কোনো অনুমোদিত কর্মী নেই।');
+        setStatus(result.workers.length ? '' : 'এখনো কোনো ভেরিফাইড কর্মী নেই।');
       } catch (error) {
         setStatus(error instanceof Error ? error.message : 'কর্মীর তালিকা আনা যায়নি');
       } finally {
@@ -56,7 +56,7 @@ export function HomeFeaturedWorkers() {
     return (
       <div className="rounded-lg border bg-card p-6 text-center shadow-sm">
         <Loader2 className="mx-auto mb-3 size-8 animate-spin text-primary" />
-        <p className="text-sm text-muted-foreground">অনুমোদিত কর্মী লোড হচ্ছে...</p>
+        <p className="text-sm text-muted-foreground">ভেরিফাইড কর্মী লোড হচ্ছে...</p>
       </div>
     );
   }

@@ -444,7 +444,7 @@ export default function WorkerProfilePage() {
             <Badge variant={profile.status === 'APPROVED' ? 'success' : 'secondary'}>
               {profile.status === 'APPROVED' ? <CheckCircle2 /> : <Clock3 />}
               {profile.status === 'APPROVED'
-                ? 'অনুমোদিত'
+                ? 'ভেরিফাইড'
                 : profile.status === 'PENDING'
                   ? 'অনুমোদনের অপেক্ষায়'
                 : 'নিষ্ক্রিয়'}
