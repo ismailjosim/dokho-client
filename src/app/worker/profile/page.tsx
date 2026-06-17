@@ -8,6 +8,18 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { SelectField } from '@/components/ui/select-field';
+import {
+  findOption,
+  getDistrictOptions,
+  getUpazilaOptions,
+  type SelectOption,
+} from '@/lib/location-options';
+import {
+  createServiceOption,
+  getWorkerServiceOptions,
+  mergeServiceOptions,
+} from '@/lib/service-options';
 import { authTokenStorage, graphqlRequest } from '@/services/graphql/client';
 
 type AccountUser = {
@@ -66,6 +78,12 @@ export default function WorkerProfilePage() {
   const [status, setStatus] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [serviceOptions, setServiceOptions] = useState<SelectOption[]>([]);
+  const [districtOptions, setDistrictOptions] = useState<SelectOption[]>([]);
+  const [upazilaOptions, setUpazilaOptions] = useState<SelectOption[]>([]);
+  const [selectedSkill, setSelectedSkill] = useState<SelectOption | null>(null);
+  const [selectedDistrict, setSelectedDistrict] = useState<SelectOption | null>(null);
+  const [selectedUpazila, setSelectedUpazila] = useState<SelectOption | null>(null);
 
   const loadProfile = useCallback(async () => {
     const token = authTokenStorage.get();
@@ -100,9 +118,69 @@ export default function WorkerProfilePage() {
     return () => window.clearTimeout(timer);
   }, [loadProfile]);
 
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadServices() {
+      const options = await getWorkerServiceOptions();
+
+      if (!isMounted) return;
+
+      const profileOption = createServiceOption(profile?.skill || '');
+      const mergedOptions = profileOption ? mergeServiceOptions(options, [profileOption]) : options;
+
+      setServiceOptions(mergedOptions);
+      setSelectedSkill(findOption(mergedOptions, profile?.skill));
+    }
+
+    void loadServices();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [profile?.skill]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadDistricts() {
+      const options = await getDistrictOptions();
+
+      if (!isMounted) return;
+
+      setDistrictOptions(options);
+      setSelectedDistrict(findOption(options, profile?.district));
+    }
+
+    void loadDistricts();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [profile?.district]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadUpazilas() {
+      const options = await getUpazilaOptions(selectedDistrict?.value || profile?.district);
+
+      if (!isMounted) return;
+
+      setUpazilaOptions(options);
+      setSelectedUpazila(findOption(options, profile?.upazila));
+    }
+
+    void loadUpazilas();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [profile?.district, profile?.upazila, selectedDistrict?.value]);
+
   function getFormError(formData: FormData) {
-    const skill = String(formData.get('skill') || '').trim();
-    const district = String(formData.get('district') || '').trim();
+    const skill = selectedSkill?.value || '';
+    const district = selectedDistrict?.value || '';
     const experienceYears = Number(formData.get('experienceYears') || 0);
 
     if (skill.length < 2) return 'সেবার নাম কমপক্ষে ২ অক্ষর দিন।';
@@ -158,9 +236,9 @@ export default function WorkerProfilePage() {
         UPSERT_PROFILE,
         {
           input: {
-            skill: String(formData.get('skill') || '').trim(),
-            district: String(formData.get('district') || '').trim(),
-            upazila: String(formData.get('upazila') || '').trim(),
+            skill: selectedSkill?.value || '',
+            district: selectedDistrict?.value || '',
+            upazila: selectedUpazila?.value || '',
             area: String(formData.get('area') || '').trim(),
             experienceYears: Number(formData.get('experienceYears') || 0),
             availability: String(formData.get('availability') || 'AVAILABLE'),
@@ -235,31 +313,48 @@ export default function WorkerProfilePage() {
         <form key={getFormKey()} className="grid gap-4 sm:grid-cols-2" onSubmit={handleSubmit}>
           <div className="space-y-2">
             <Label htmlFor="skill">সেবা</Label>
-            <Input
-              id="skill"
+            <SelectField
+              inputId="skill"
               name="skill"
-              required
-              placeholder="প্লাম্বার"
-              defaultValue={profile?.skill || ''}
+              options={serviceOptions}
+              value={selectedSkill}
+              placeholder="সেবা নির্বাচন করুন অথবা লিখুন"
+              isCreatable
+              onChange={setSelectedSkill}
+              onCreateOption={(inputValue) => {
+                const option = createServiceOption(inputValue);
+
+                if (!option) return;
+
+                setServiceOptions((currentOptions) => mergeServiceOptions(currentOptions, [option]));
+                setSelectedSkill(option);
+              }}
             />
           </div>
           <div className="space-y-2">
             <Label htmlFor="district">জেলা</Label>
-            <Input
-              id="district"
+            <SelectField
+              inputId="district"
               name="district"
-              required
-              placeholder="ঢাকা"
-              defaultValue={profile?.district || ''}
+              options={districtOptions}
+              value={selectedDistrict}
+              placeholder="জেলা নির্বাচন করুন"
+              onChange={(option) => {
+                setSelectedDistrict(option);
+                setSelectedUpazila(null);
+              }}
             />
           </div>
           <div className="space-y-2">
             <Label htmlFor="upazila">উপজেলা/থানা</Label>
-            <Input
-              id="upazila"
+            <SelectField
+              inputId="upazila"
               name="upazila"
-              placeholder="মিরপুর"
-              defaultValue={profile?.upazila || ''}
+              options={upazilaOptions}
+              value={selectedUpazila}
+              placeholder={selectedDistrict ? 'উপজেলা/থানা নির্বাচন করুন' : 'আগে জেলা নির্বাচন করুন'}
+              isDisabled={!selectedDistrict}
+              onChange={setSelectedUpazila}
             />
           </div>
           <div className="space-y-2">

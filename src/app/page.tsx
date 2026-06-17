@@ -13,12 +13,7 @@ import {
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { bn } from '@/lib/bengali';
-
-const skills = ['প্লাম্বার', 'ইলেকট্রিশিয়ান', 'রং মিস্ত্রি', 'কাঠ মিস্ত্রি'];
-const districts = ['ঢাকা', 'রাজশাহী', 'চট্টগ্রাম', 'সিলেট', 'খুলনা'];
+import { HomeSearchForm } from '@/components/home/home-search-form';
 
 const workers = [
   {
@@ -128,42 +123,7 @@ export default function Home() {
               <Search className="size-5 text-primary" />
               <h2 className="text-xl font-bold">কর্মী খুঁজুন</h2>
             </div>
-            <form action="/workers" className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="skill">{bn.field.skill}</Label>
-                <select
-                  id="skill"
-                  name="skill"
-                  className="h-11 w-full rounded-md border border-input bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                  defaultValue="প্লাম্বার"
-                >
-                  {skills.map((skill) => (
-                    <option key={skill}>{skill}</option>
-                  ))}
-                </select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="district">{bn.field.district}</Label>
-                <select
-                  id="district"
-                  name="district"
-                  className="h-11 w-full rounded-md border border-input bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                  defaultValue="ঢাকা"
-                >
-                  {districts.map((district) => (
-                    <option key={district}>{district}</option>
-                  ))}
-                </select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="area">{bn.field.area}</Label>
-                <Input id="area" placeholder="যেমন: মিরপুর ১০" />
-              </div>
-              <Button className="w-full">
-                <Search />
-                {bn.action.viewResults}
-              </Button>
-            </form>
+            <HomeSearchForm />
           </aside>
 
           <div className="space-y-4">

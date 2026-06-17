@@ -5,9 +5,15 @@ import Link from 'next/link';
 import { AlertCircle, ArrowLeft, Loader2, Search, SearchX } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { SelectField } from '@/components/ui/select-field';
 import { WorkerResultCard, type WorkerResult } from '@/components/workers/worker-result-card';
+import {
+  findOption,
+  getDistrictOptions,
+  type SelectOption,
+} from '@/lib/location-options';
+import { getWorkerServiceOptions } from '@/lib/service-options';
 import { graphqlRequest } from '@/services/graphql/client';
 
 const WORKERS_QUERY = /* GraphQL */ `
@@ -47,6 +53,10 @@ export default function WorkersPage() {
   const [hasSearched, setHasSearched] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [initialFilters] = useState(getInitialFilters);
+  const [serviceOptions, setServiceOptions] = useState<SelectOption[]>([]);
+  const [districtOptions, setDistrictOptions] = useState<SelectOption[]>([]);
+  const [selectedSkill, setSelectedSkill] = useState<SelectOption | null>(null);
+  const [selectedDistrict, setSelectedDistrict] = useState<SelectOption | null>(null);
 
   const searchWorkers = useCallback(async (skill: string, district: string) => {
     setIsLoading(true);
@@ -73,12 +83,32 @@ export default function WorkersPage() {
   async function handleSearch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    const formData = new FormData(event.currentTarget);
-    await searchWorkers(
-      String(formData.get('skill') || '').trim(),
-      String(formData.get('district') || '').trim()
-    );
+    await searchWorkers(selectedSkill?.value || '', selectedDistrict?.value || '');
   }
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadOptions() {
+      const [services, districts] = await Promise.all([
+        getWorkerServiceOptions(),
+        getDistrictOptions(),
+      ]);
+
+      if (!isMounted) return;
+
+      setServiceOptions(services);
+      setSelectedSkill(findOption(services, initialFilters.skill));
+      setDistrictOptions(districts);
+      setSelectedDistrict(findOption(districts, initialFilters.district));
+    }
+
+    void loadOptions();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [initialFilters.district, initialFilters.skill]);
 
   useEffect(() => {
     if (!initialFilters.skill && !initialFilters.district) {
@@ -112,20 +142,24 @@ export default function WorkersPage() {
         >
           <div className="space-y-2">
             <Label htmlFor="skill">সেবা</Label>
-            <Input
-              id="skill"
+            <SelectField
+              inputId="skill"
               name="skill"
-              placeholder="প্লাম্বার"
-              defaultValue={initialFilters.skill}
+              options={serviceOptions}
+              value={selectedSkill}
+              placeholder="সেবা নির্বাচন করুন"
+              onChange={setSelectedSkill}
             />
           </div>
           <div className="space-y-2">
             <Label htmlFor="district">জেলা</Label>
-            <Input
-              id="district"
+            <SelectField
+              inputId="district"
               name="district"
-              placeholder="ঢাকা"
-              defaultValue={initialFilters.district}
+              options={districtOptions}
+              value={selectedDistrict}
+              placeholder="জেলা নির্বাচন করুন"
+              onChange={setSelectedDistrict}
             />
           </div>
           <Button className="self-end" disabled={isLoading}>
