@@ -79,6 +79,7 @@ export default function AdminDashboardPage() {
   const [status, setStatus] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [hasLoaded, setHasLoaded] = useState(false);
+  const [activeWorkerId, setActiveWorkerId] = useState('');
 
   async function loadPendingWorkers() {
     const token = authTokenStorage.get();
@@ -108,7 +109,7 @@ export default function AdminDashboardPage() {
     }
   }
 
-  async function moderateWorker(id: string, action: 'approve' | 'deactivate') {
+  async function moderateWorker(worker: PendingWorker, action: 'approve' | 'deactivate') {
     const token = authTokenStorage.get();
 
     if (!token) {
@@ -117,21 +118,33 @@ export default function AdminDashboardPage() {
       return;
     }
 
-    setIsLoading(true);
+    if (action === 'deactivate') {
+      const isConfirmed = window.confirm(`${worker.user.name} এর প্রোফাইল ডিঅ্যাক্টিভ করবেন?`);
+
+      if (!isConfirmed) {
+        return;
+      }
+    }
+
+    setActiveWorkerId(worker.id);
     setStatus('');
 
     try {
       await graphqlRequest(
         action === 'approve' ? APPROVE_WORKER : DEACTIVATE_WORKER,
-        { id },
+        { id: worker.id },
         token
       );
-      setWorkers((current) => current.filter((worker) => worker.id !== id));
-      setStatus(action === 'approve' ? 'প্রোফাইল অনুমোদিত হয়েছে।' : 'প্রোফাইল ডিঅ্যাক্টিভ হয়েছে।');
+      setStatus(
+        action === 'approve'
+          ? `${worker.user.name} এর প্রোফাইল অনুমোদিত হয়েছে।`
+          : `${worker.user.name} এর প্রোফাইল ডিঅ্যাক্টিভ হয়েছে।`
+      );
+      await loadPendingWorkers();
     } catch (error) {
       setStatus(error instanceof Error ? error.message : 'অ্যাকশন সম্পন্ন হয়নি');
     } finally {
-      setIsLoading(false);
+      setActiveWorkerId('');
     }
   }
 
@@ -237,17 +250,24 @@ export default function AdminDashboardPage() {
                 </p>
               </div>
               <div className="mt-4 flex flex-col gap-2 sm:flex-row">
-                <Button onClick={() => moderateWorker(worker.id, 'approve')} disabled={isLoading}>
-                  <CheckCircle2 />
-                  {bn.action.approve}
+                <Button
+                  onClick={() => moderateWorker(worker, 'approve')}
+                  disabled={Boolean(activeWorkerId)}
+                >
+                  {activeWorkerId === worker.id ? (
+                    <Loader2 className="animate-spin" />
+                  ) : (
+                    <CheckCircle2 />
+                  )}
+                  {activeWorkerId === worker.id ? 'প্রসেস হচ্ছে' : bn.action.approve}
                 </Button>
                 <Button
                   variant="outline"
-                  onClick={() => moderateWorker(worker.id, 'deactivate')}
-                  disabled={isLoading}
+                  onClick={() => moderateWorker(worker, 'deactivate')}
+                  disabled={Boolean(activeWorkerId)}
                 >
-                  <XCircle />
-                  {bn.action.deactivate}
+                  {activeWorkerId === worker.id ? <Loader2 className="animate-spin" /> : <XCircle />}
+                  {activeWorkerId === worker.id ? 'প্রসেস হচ্ছে' : bn.action.deactivate}
                 </Button>
               </div>
             </article>
