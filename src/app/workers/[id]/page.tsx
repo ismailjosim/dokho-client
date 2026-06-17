@@ -3,7 +3,18 @@
 import { type FormEvent, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { ArrowLeft, BriefcaseBusiness, CreditCard, Hammer, Loader2, MapPin, Phone } from 'lucide-react';
+import {
+  ArrowLeft,
+  BadgeCheck,
+  BriefcaseBusiness,
+  CreditCard,
+  Hammer,
+  Loader2,
+  MapPin,
+  Phone,
+  ShieldCheck,
+  UserRound,
+} from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -205,133 +216,162 @@ export default function WorkerDetailsPage() {
   }
 
   return (
-    <main className="mx-auto min-h-screen max-w-3xl px-4 py-8 sm:px-6">
-      <Button variant="ghost" asChild className="mb-6 w-fit px-0">
-        <Link href="/workers">
-          <ArrowLeft />
-          কর্মী তালিকায় ফিরুন
-        </Link>
-      </Button>
-
-      {isLoading ? (
-        <div className="rounded-lg border bg-card p-6 text-center shadow-sm">
-          <Loader2 className="mx-auto mb-3 size-8 animate-spin text-primary" />
-          <p className="text-sm text-muted-foreground">কর্মীর তথ্য লোড হচ্ছে...</p>
+    <main className="min-h-screen bg-background">
+      <section className="border-b bg-foreground text-white">
+        <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
+          <Button variant="secondary" asChild className="mb-6 w-fit">
+            <Link href="/workers">
+              <ArrowLeft />
+              কর্মী তালিকায় ফিরুন
+            </Link>
+          </Button>
+          <p className="flex items-center gap-2 text-sm font-semibold text-white/72">
+            <ShieldCheck className="size-4" />
+            যাচাইকৃত কর্মী প্রোফাইল
+          </p>
+          <h1 className="mt-2 max-w-3xl text-3xl font-bold leading-tight sm:text-5xl">
+            প্রোফাইল দেখে সিদ্ধান্ত নিন, যোগাযোগ নম্বর আনলক করুন
+          </h1>
         </div>
-      ) : null}
+      </section>
 
-      {status ? <p className="rounded-md bg-muted p-3 text-sm">{status}</p> : null}
-
-      {worker ? (
-        <article className="rounded-lg border bg-card p-5 shadow-sm">
-          <div className="mb-4 flex flex-wrap gap-2">
-            <Badge variant="success">অনুমোদিত</Badge>
-            <Badge variant="secondary">{worker.skill}</Badge>
-            <Badge variant={worker.availability === 'AVAILABLE' ? 'success' : 'outline'}>
-              {worker.availability === 'AVAILABLE' ? 'কাজ নিতে পারবেন' : 'এখন ব্যস্ত'}
-            </Badge>
+      <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
+        {isLoading ? (
+          <div className="rounded-lg border bg-card p-6 text-center shadow-sm">
+            <Loader2 className="mx-auto mb-3 size-8 animate-spin text-primary" />
+            <p className="text-sm text-muted-foreground">কর্মীর তথ্য লোড হচ্ছে...</p>
           </div>
+        ) : null}
 
-          <h1 className="text-2xl font-bold">{worker.user.name}</h1>
-          {worker.profilePhotoUrl ? (
-            <a
-              className="mt-2 inline-block text-sm font-medium text-primary hover:underline"
-              href={worker.profilePhotoUrl}
-              target="_blank"
-              rel="noreferrer"
-            >
-              প্রোফাইল ছবি দেখুন
-            </a>
-          ) : null}
+        {status ? <p className="mb-4 rounded-md bg-muted p-3 text-sm">{status}</p> : null}
 
-          <div className="mt-4 grid gap-3 text-sm text-muted-foreground">
-            <p className="flex items-center gap-2">
-              <MapPin className="size-4 text-primary" />
-              {getWorkerLocation(worker)}
-            </p>
-            <p className="flex items-center gap-2">
-              <Hammer className="size-4 text-primary" />
-              অভিজ্ঞতা {worker.experienceYears} বছর
-            </p>
-            <p className="flex items-center gap-2">
-              <BriefcaseBusiness className="size-4 text-primary" />
-              {worker.skill}
-            </p>
-          </div>
+        {worker ? (
+          <div className="grid gap-5 lg:grid-cols-[1fr_360px]">
+            <article className="overflow-hidden rounded-lg border bg-card shadow-sm">
+              <div className="grid gap-0 md:grid-cols-[280px_1fr]">
+                <div className="flex min-h-80 items-center justify-center bg-muted">
+                  {worker.profilePhotoUrl ? (
+                    <div
+                      aria-label={`${worker.user.name} এর প্রোফাইল ছবি`}
+                      className="h-full min-h-80 w-full bg-cover bg-center"
+                      role="img"
+                      style={{ backgroundImage: `url(${worker.profilePhotoUrl})` }}
+                    />
+                  ) : (
+                    <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                      <UserRound className="size-14" />
+                      <span className="text-sm">প্রোফাইল ছবি নেই</span>
+                    </div>
+                  )}
+                </div>
+                <div className="p-5">
+                  <div className="mb-4 flex flex-wrap gap-2">
+                    <Badge variant="success">
+                      <BadgeCheck />
+                      অনুমোদিত
+                    </Badge>
+                    <Badge variant="secondary">{worker.skill}</Badge>
+                    <Badge variant={worker.availability === 'AVAILABLE' ? 'success' : 'outline'}>
+                      {worker.availability === 'AVAILABLE' ? 'কাজ নিতে পারবেন' : 'এখন ব্যস্ত'}
+                    </Badge>
+                  </div>
 
-          <div className="mt-5 rounded-md border bg-background p-4">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <p className="font-semibold">যোগাযোগ নম্বর</p>
-                <p className="text-sm text-muted-foreground">
+                  <h2 className="text-3xl font-bold">{worker.user.name}</h2>
+                  <p className="mt-2 max-w-xl text-sm leading-6 text-muted-foreground">
+                    এই প্রোফাইল অ্যাডমিন দ্বারা যাচাই করা হয়েছে। যোগাযোগের আগে এলাকা, সেবা ও
+                    অভিজ্ঞতা মিলিয়ে নিন।
+                  </p>
+
+                  <div className="mt-6 grid gap-3 sm:grid-cols-2">
+                    <div className="rounded-md border bg-background p-4">
+                      <MapPin className="mb-2 size-5 text-primary" />
+                      <p className="text-sm text-muted-foreground">লোকেশন</p>
+                      <p className="mt-1 font-semibold">{getWorkerLocation(worker)}</p>
+                    </div>
+                    <div className="rounded-md border bg-background p-4">
+                      <Hammer className="mb-2 size-5 text-primary" />
+                      <p className="text-sm text-muted-foreground">অভিজ্ঞতা</p>
+                      <p className="mt-1 font-semibold">{worker.experienceYears} বছর</p>
+                    </div>
+                    <div className="rounded-md border bg-background p-4 sm:col-span-2">
+                      <BriefcaseBusiness className="mb-2 size-5 text-primary" />
+                      <p className="text-sm text-muted-foreground">সেবা</p>
+                      <p className="mt-1 font-semibold">{worker.skill}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            <aside className="space-y-4">
+              <div className="rounded-lg border bg-card p-5 shadow-sm">
+                <p className="mb-1 text-sm font-semibold text-primary">যোগাযোগ অ্যাক্সেস</p>
+                <h2 className="text-2xl font-bold">নম্বর আনলক</h2>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">
                   ক্রেডিট: {availableCredits} | ১টি নম্বর দেখতে ৳২০ অথবা ১০টি নম্বর ৳১০০
                 </p>
+                {unlockedPhone ? (
+                  <Button asChild className="mt-4 w-full">
+                    <a href={`tel:${unlockedPhone}`}>
+                      <Phone />
+                      {unlockedPhone}
+                    </a>
+                  </Button>
+                ) : (
+                  <Button className="mt-4 w-full" onClick={handleUnlockContact} disabled={isUnlocking}>
+                    {isUnlocking ? <Loader2 className="animate-spin" /> : <Phone />}
+                    নম্বর আনলক করুন
+                  </Button>
+                )}
               </div>
-              {unlockedPhone ? (
-                <Button asChild>
-                  <a href={`tel:${unlockedPhone}`}>
-                    <Phone />
-                    {unlockedPhone}
-                  </a>
-                </Button>
-              ) : (
-                <Button onClick={handleUnlockContact} disabled={isUnlocking}>
-                  {isUnlocking ? <Loader2 className="animate-spin" /> : <Phone />}
-                  নম্বর আনলক করুন
-                </Button>
-              )}
-            </div>
-          </div>
 
-          <form className="mt-4 grid gap-3 rounded-md border bg-background p-4" onSubmit={handleCreatePayment}>
-            <div className="flex items-center gap-2">
-              <CreditCard className="size-4 text-primary" />
-              <h2 className="font-semibold">পেমেন্ট রিকোয়েস্ট</h2>
-            </div>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="plan">প্ল্যান</Label>
-                <select
-                  id="plan"
-                  name="plan"
-                  className="h-11 w-full rounded-md border border-input bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                  defaultValue="SINGLE_CONTACT"
-                >
-                  <option value="SINGLE_CONTACT">৳২০ - ১টি প্রোফাইল</option>
-                  <option value="BULK_10_CONTACTS">৳১০০ - ১০টি প্রোফাইল</option>
-                </select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="method">মেথড</Label>
-                <select
-                  id="method"
-                  name="method"
-                  className="h-11 w-full rounded-md border border-input bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                  defaultValue="BKASH"
-                >
-                  <option value="BKASH">bKash</option>
-                  <option value="NAGAD">Nagad</option>
-                  <option value="SSLCOMMERZ">SSLCommerz</option>
-                </select>
-              </div>
-            </div>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="senderPhone">প্রেরক নম্বর</Label>
-                <Input id="senderPhone" name="senderPhone" placeholder="01XXXXXXXXX" />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="transactionId">ট্রানজেকশন আইডি</Label>
-                <Input id="transactionId" name="transactionId" placeholder="যেমন: TXN123" />
-              </div>
-            </div>
-            <Button className="w-full sm:w-fit" disabled={isPaying}>
-              {isPaying ? <Loader2 className="animate-spin" /> : <CreditCard />}
-              রিকোয়েস্ট জমা দিন
-            </Button>
-          </form>
-        </article>
-      ) : null}
+              <form className="grid gap-3 rounded-lg border bg-card p-5 shadow-sm" onSubmit={handleCreatePayment}>
+                <div className="flex items-center gap-2">
+                  <CreditCard className="size-4 text-primary" />
+                  <h2 className="font-semibold">পেমেন্ট রিকোয়েস্ট</h2>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="plan">প্ল্যান</Label>
+                  <select
+                    id="plan"
+                    name="plan"
+                    className="h-11 w-full rounded-md border border-input bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    defaultValue="SINGLE_CONTACT"
+                  >
+                    <option value="SINGLE_CONTACT">৳২০ - ১টি প্রোফাইল</option>
+                    <option value="BULK_10_CONTACTS">৳১০০ - ১০টি প্রোফাইল</option>
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="method">মেথড</Label>
+                  <select
+                    id="method"
+                    name="method"
+                    className="h-11 w-full rounded-md border border-input bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    defaultValue="BKASH"
+                  >
+                    <option value="BKASH">bKash</option>
+                    <option value="NAGAD">Nagad</option>
+                    <option value="SSLCOMMERZ">SSLCommerz</option>
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="senderPhone">প্রেরক নম্বর</Label>
+                  <Input id="senderPhone" name="senderPhone" placeholder="01XXXXXXXXX" />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="transactionId">ট্রানজেকশন আইডি</Label>
+                  <Input id="transactionId" name="transactionId" placeholder="যেমন: TXN123" />
+                </div>
+                <Button className="w-full" disabled={isPaying}>
+                  {isPaying ? <Loader2 className="animate-spin" /> : <CreditCard />}
+                  রিকোয়েস্ট জমা দিন
+                </Button>
+              </form>
+            </aside>
+          </div>
+        ) : null}
+      </div>
     </main>
   );
 }

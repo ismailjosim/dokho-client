@@ -32,10 +32,10 @@ export function WorkerResultCard({ worker }: WorkerResultCardProps) {
   const initial = worker.user.name.trim().charAt(0) || 'ক';
 
   return (
-    <article className="rounded-lg border bg-card p-4 shadow-sm">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+    <article className="overflow-hidden rounded-lg border bg-card shadow-sm transition-colors hover:border-primary/40">
+      <div className="flex flex-col gap-4 p-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex min-w-0 flex-1 flex-col gap-4 sm:flex-row">
-          <div className="flex size-24 shrink-0 items-center justify-center overflow-hidden rounded-md border bg-muted">
+          <div className="flex aspect-4/5 w-full shrink-0 items-center justify-center overflow-hidden rounded-md border bg-muted sm:w-28">
             {worker.profilePhotoUrl ? (
               <div
                 aria-label={`${worker.user.name} এর প্রোফাইল ছবি`}
