@@ -59,6 +59,25 @@ export default function RegisterPage() {
         }`
       );
     } catch (error) {
+      if (error instanceof Error && error.message === 'Phone number already exists') {
+        try {
+          const otp = await graphqlRequest<{
+            requestOtp: { developmentOtp: string | null };
+          }>(REQUEST_OTP, { phone });
+          setStatus(
+            `এই ফোন নম্বর দিয়ে আগে অ্যাকাউন্ট তৈরি হয়েছে। OTP পেজে গিয়ে যাচাই করুন। ${
+              otp.requestOtp.developmentOtp
+                ? `ডেভেলপমেন্ট OTP: ${otp.requestOtp.developmentOtp}`
+                : ''
+            }`
+          );
+          return;
+        } catch {
+          setStatus('এই ফোন নম্বর দিয়ে আগে অ্যাকাউন্ট তৈরি হয়েছে। OTP পেজে গিয়ে যাচাই করুন।');
+          return;
+        }
+      }
+
       setStatus(error instanceof Error ? error.message : 'রেজিস্ট্রেশন ব্যর্থ হয়েছে');
     } finally {
       setIsSubmitting(false);

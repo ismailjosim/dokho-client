@@ -2,6 +2,7 @@
 
 import { FormEvent, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { ArrowLeft, ShieldCheck } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -24,6 +25,7 @@ const ADMIN_LOGIN = /* GraphQL */ `
 `;
 
 export default function AdminLoginPage() {
+  const router = useRouter();
   const [status, setStatus] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -44,6 +46,7 @@ export default function AdminLoginPage() {
 
       authTokenStorage.set(result.adminLogin.accessToken);
       setStatus(`${result.adminLogin.user.name} অ্যাডমিন হিসেবে লগইন করেছেন।`);
+      router.push('/admin/dashboard');
     } catch (error) {
       setStatus(error instanceof Error ? error.message : 'অ্যাডমিন লগইন ব্যর্থ হয়েছে');
     } finally {

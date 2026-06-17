@@ -64,6 +64,9 @@ export default function Home() {
             <a href="/register" className="hover:text-foreground">
               কর্মী হোন
             </a>
+            <a href="/verify-otp" className="hover:text-foreground">
+              লগইন
+            </a>
             <a href="/admin/login" className="hover:text-foreground">
               অ্যাডমিন
             </a>
