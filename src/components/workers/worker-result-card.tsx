@@ -1,4 +1,4 @@
-import { BadgeCheck, BriefcaseBusiness, Hammer, MapPin, Phone } from 'lucide-react';
+import { BadgeCheck, BriefcaseBusiness, Eye, Hammer, MapPin, Phone } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -13,7 +13,7 @@ export type WorkerResult = {
   availability: 'AVAILABLE' | 'NOT_AVAILABLE';
   user: {
     name: string;
-    phone: string;
+    maskedPhone?: string | null;
   };
 };
 
@@ -61,12 +61,18 @@ export function WorkerResultCard({ worker }: WorkerResultCardProps) {
           </dl>
         </div>
 
-        <Button asChild className="w-full sm:w-auto">
-          <a href={`tel:${worker.user.phone}`} aria-label={`${worker.user.name} কে কল করুন`}>
-            <Phone />
-            কল করুন
-          </a>
-        </Button>
+        <div className="grid gap-2 sm:w-auto">
+          <div className="flex items-center justify-center gap-2 rounded-md border bg-background px-3 py-2 text-sm text-muted-foreground">
+            <Phone className="size-4 text-primary" />
+            {worker.user.maskedPhone || 'ফোন নম্বর নিরাপদে রাখা হয়েছে'}
+          </div>
+          <Button asChild className="w-full sm:w-auto">
+            <a href={`/workers/${worker.id}`} aria-label={`${worker.user.name} এর প্রোফাইল দেখুন`}>
+              <Eye />
+              বিস্তারিত দেখুন
+            </a>
+          </Button>
+        </div>
       </div>
     </article>
   );
