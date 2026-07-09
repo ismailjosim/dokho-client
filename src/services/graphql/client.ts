@@ -60,7 +60,9 @@ export async function graphqlRequest<
   if (!response.ok || result.errors?.length) {
     const firstError = result.errors?.[0];
     const issueMessage = firstError?.extensions?.issues?.[0]?.message;
-    throw new Error(normalizeErrorMessage(issueMessage || firstError?.message || 'অনুরোধ ব্যর্থ হয়েছে'));
+    throw new Error(
+      normalizeErrorMessage(issueMessage || firstError?.message || 'অনুরোধ ব্যর্থ হয়েছে')
+    );
   }
 
   if (!result.data) {
