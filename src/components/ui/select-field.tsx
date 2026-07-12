@@ -24,7 +24,9 @@ const selectStyles: StylesConfig<SelectOption, false> = {
     borderColor: state.isFocused ? 'var(--ring)' : 'var(--input)',
     backgroundColor: 'var(--background)',
     borderRadius: 'var(--radius)',
-    boxShadow: state.isFocused ? '0 0 0 2px color-mix(in oklch, var(--ring) 35%, transparent)' : 'none',
+    boxShadow: state.isFocused
+      ? '0 0 0 2px color-mix(in oklch, var(--ring) 35%, transparent)'
+      : 'none',
     ':hover': {
       borderColor: 'var(--ring)',
     },
