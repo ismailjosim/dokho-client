@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { BadgeCheck, BriefcaseBusiness, Eye, Hammer, MapPin, Phone, UserRound } from 'lucide-react';
+import { BadgeCheck, BriefcaseBusiness, Eye, Hammer, MapPin, UserRound } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -15,7 +15,6 @@ export type WorkerResult = {
   availability: 'AVAILABLE' | 'NOT_AVAILABLE';
   user: {
     name: string;
-    maskedPhone?: string | null;
   };
 };
 
@@ -33,9 +32,9 @@ export function WorkerResultCard({ worker }: WorkerResultCardProps) {
 
   return (
     <article className="overflow-hidden rounded-lg border bg-card shadow-sm transition-colors hover:border-primary/40">
-      <div className="flex flex-col gap-4 p-4 sm:flex-row sm:items-start sm:justify-between">
-        <div className="flex min-w-0 flex-1 flex-col gap-4 sm:flex-row">
-          <div className="flex aspect-4/5 w-full shrink-0 items-center justify-center overflow-hidden rounded-md border bg-muted sm:w-28">
+      <div className="grid gap-0 sm:grid-cols-[116px_1fr]">
+        <div className="flex min-h-44 items-center justify-center bg-muted sm:min-h-full">
+          <div className="flex h-full min-h-44 w-full items-center justify-center overflow-hidden sm:min-h-full">
             {worker.profilePhotoUrl ? (
               <div
                 aria-label={`${worker.user.name} এর প্রোফাইল ছবি`}
@@ -50,9 +49,11 @@ export function WorkerResultCard({ worker }: WorkerResultCardProps) {
               </div>
             )}
           </div>
+        </div>
 
-          <div className="min-w-0 flex-1">
-            <div className="mb-3 flex flex-wrap gap-2">
+        <div className="flex min-w-0 flex-col justify-between p-4">
+          <div>
+            <div className="mb-3 flex flex-wrap items-center gap-2">
               <Badge variant="success">
                 <BadgeCheck />
                 ভেরিফাইড
@@ -69,7 +70,7 @@ export function WorkerResultCard({ worker }: WorkerResultCardProps) {
 
             <h2 className="break-words text-xl font-bold leading-7">{worker.user.name}</h2>
 
-            <dl className="mt-3 grid gap-2 text-sm leading-6 text-muted-foreground">
+            <dl className="mt-3 grid gap-2 text-sm leading-6 text-muted-foreground sm:grid-cols-2">
               <div className="flex min-w-0 items-start gap-2">
                 <MapPin className="mt-0.5 size-4 shrink-0 text-primary" />
                 <dd className="min-w-0 break-words">{getWorkerLocation(worker)}</dd>
@@ -80,19 +81,21 @@ export function WorkerResultCard({ worker }: WorkerResultCardProps) {
               </div>
             </dl>
           </div>
-        </div>
 
-        <div className="grid gap-2 sm:w-auto">
-          <div className="flex items-center justify-center gap-2 rounded-md border bg-background px-3 py-2 text-sm text-muted-foreground">
-            <Phone className="size-4 text-primary" />
-            {worker.user.maskedPhone || 'ফোন নম্বর নিরাপদে রাখা হয়েছে'}
+          <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-xs font-medium text-muted-foreground">
+              যোগাযোগ নম্বর বিস্তারিত পেজে আনলক করা যাবে
+            </p>
+            <Button asChild className="w-full sm:w-auto">
+              <Link
+                href={`/workers/${worker.id}`}
+                aria-label={`${worker.user.name} এর প্রোফাইল দেখুন`}
+              >
+                <Eye />
+                বিস্তারিত দেখুন
+              </Link>
+            </Button>
           </div>
-          <Button asChild className="w-full sm:w-auto">
-            <Link href={`/workers/${worker.id}`} aria-label={`${worker.user.name} এর প্রোফাইল দেখুন`}>
-              <Eye />
-              বিস্তারিত দেখুন
-            </Link>
-          </Button>
         </div>
       </div>
     </article>
