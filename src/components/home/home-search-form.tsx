@@ -9,10 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { SelectField } from '@/components/ui/select-field';
 import { bn } from '@/lib/bengali';
-import {
-  getDistrictOptions,
-  type SelectOption,
-} from '@/lib/location-options';
+import { getDistrictOptions, type SelectOption } from '@/lib/location-options';
 import { getWorkerServiceOptions } from '@/lib/service-options';
 
 export function HomeSearchForm() {
@@ -60,7 +57,10 @@ export function HomeSearchForm() {
   }
 
   return (
-    <form className="space-y-4" onSubmit={handleSubmit}>
+    <form
+      className="grid gap-4 md:grid-cols-[1fr_1fr_1fr_auto] md:items-end"
+      onSubmit={handleSubmit}
+    >
       <div className="space-y-2">
         <Label htmlFor="home-skill">{bn.field.skill}</Label>
         <SelectField
@@ -87,7 +87,7 @@ export function HomeSearchForm() {
         <Label htmlFor="area">{bn.field.area}</Label>
         <Input id="area" placeholder="যেমন: মিরপুর ১০" />
       </div>
-      <Button className="w-full">
+      <Button className="w-full md:h-11">
         <Search />
         {bn.action.viewResults}
       </Button>
