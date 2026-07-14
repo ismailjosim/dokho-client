@@ -21,7 +21,6 @@ const FEATURED_WORKERS_QUERY = /* GraphQL */ `
       availability
       user {
         name
-        maskedPhone
       }
     }
   }
