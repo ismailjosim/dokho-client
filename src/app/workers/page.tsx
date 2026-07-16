@@ -1,41 +1,15 @@
 'use client';
 
 import { FormEvent, useCallback, useEffect, useState } from 'react';
-import Link from 'next/link';
-import { AlertCircle, ArrowLeft, Filter, Loader2, Search, SearchX } from 'lucide-react';
 
-import { Button } from '@/components/ui/button';
-import { LanguageSwitcher } from '@/components/site/language-switcher';
-import { ThemeToggle } from '@/components/site/theme-toggle';
-import { Label } from '@/components/ui/label';
-import { SelectField } from '@/components/ui/select-field';
-import { WorkerResultCard, type WorkerResult } from '@/components/workers/worker-result-card';
-import {
-  findOption,
-  getDistrictOptions,
-  type SelectOption,
-} from '@/lib/location-options';
+import { WorkersFilterSidebar } from '@/components/workers/workers-filter-sidebar';
+import { WorkersPageHeader } from '@/components/workers/workers-page-header';
+import { WORKERS_QUERY } from '@/components/workers/workers-query';
+import { WorkersResultsSection } from '@/components/workers/workers-results-section';
+import type { WorkerResult } from '@/components/workers/worker-result-card';
+import { findOption, getDistrictOptions, type SelectOption } from '@/lib/location-options';
 import { getWorkerServiceOptions } from '@/lib/service-options';
 import { graphqlRequest } from '@/services/graphql/client';
-
-const WORKERS_QUERY = /* GraphQL */ `
-  query Workers($skill: String, $district: String, $limit: Int) {
-    workers(skill: $skill, district: $district, limit: $limit) {
-      id
-      skill
-      district
-      upazila
-      area
-      profilePhotoUrl
-      experienceYears
-      availability
-      user {
-        name
-        maskedPhone
-      }
-    }
-  }
-`;
 
 function getInitialFilters() {
   if (typeof window === 'undefined') {
@@ -52,7 +26,7 @@ function getInitialFilters() {
 
 export default function WorkersPage() {
   const [workers, setWorkers] = useState<WorkerResult[]>([]);
-  const [status, setStatus] = useState('সার্চ করলে ভেরিফাইড কর্মীদের তালিকা দেখা যাবে।');
+  const [status, setStatus] = useState('');
   const [hasSearched, setHasSearched] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [initialFilters] = useState(getInitialFilters);
@@ -89,6 +63,12 @@ export default function WorkersPage() {
     await searchWorkers(selectedSkill?.value || '', selectedDistrict?.value || '');
   }
 
+  async function handleReset() {
+    setSelectedSkill(null);
+    setSelectedDistrict(null);
+    await searchWorkers('', '');
+  }
+
   useEffect(() => {
     let isMounted = true;
 
@@ -114,10 +94,6 @@ export default function WorkersPage() {
   }, [initialFilters.district, initialFilters.skill]);
 
   useEffect(() => {
-    if (!initialFilters.skill && !initialFilters.district) {
-      return;
-    }
-
     const timer = window.setTimeout(() => {
       void searchWorkers(initialFilters.skill, initialFilters.district);
     }, 0);
@@ -127,106 +103,30 @@ export default function WorkersPage() {
 
   return (
     <main className="min-h-screen bg-background">
-      <section className="border-b bg-foreground text-white">
-        <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
-          <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <Button variant="secondary" asChild className="w-fit">
-              <Link href="/">
-                <ArrowLeft />
-                হোমে ফিরুন
-              </Link>
-            </Button>
-            <div className="flex items-center gap-2">
-              <LanguageSwitcher />
-              <ThemeToggle />
-            </div>
-          </div>
-          <div className="max-w-3xl">
-            <p className="mb-2 flex items-center gap-2 text-sm font-semibold text-white/72">
-              <Filter className="size-4" />
-              কর্মী প্রোফাইল ডিরেক্টরি
-            </p>
-            <h1 className="text-3xl font-bold leading-tight sm:text-5xl">
-              সেবা, জেলা ও অভিজ্ঞতা দেখে যাচাইকৃত কর্মী বাছাই করুন
-            </h1>
-            <p className="mt-4 max-w-2xl text-sm leading-6 text-white/72">
-              প্রোফাইল দেখা ফ্রি। পছন্দ হলে পেমেন্ট ক্রেডিট ব্যবহার করে ফোন নম্বর আনলক করুন।
-            </p>
-          </div>
-        </div>
-      </section>
+      <WorkersPageHeader />
 
       <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
-        <div className="mb-6 rounded-lg border bg-card p-5 shadow-sm">
-          <div className="mb-5 flex items-center gap-2">
-            <Search className="size-5 text-primary" />
-            <h2 className="text-2xl font-bold">ফিল্টার</h2>
-          </div>
-        <form
-          key={`${initialFilters.skill}-${initialFilters.district}`}
-          className="grid gap-4 sm:grid-cols-[1fr_1fr_auto]"
-          onSubmit={handleSearch}
-        >
-          <div className="space-y-2">
-            <Label htmlFor="skill">সেবা</Label>
-            <SelectField
-              inputId="skill"
-              name="skill"
-              options={serviceOptions}
-              value={selectedSkill}
-              placeholder="সেবা নির্বাচন করুন"
-              onChange={setSelectedSkill}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="district">জেলা</Label>
-            <SelectField
-              inputId="district"
-              name="district"
-              options={districtOptions}
-              value={selectedDistrict}
-              placeholder="জেলা নির্বাচন করুন"
-              onChange={setSelectedDistrict}
-            />
-          </div>
-          <Button className="self-end" disabled={isLoading}>
-            {isLoading ? <Loader2 className="animate-spin" /> : <Search />}
-            {isLoading ? 'খোঁজা হচ্ছে' : 'খুঁজুন'}
-          </Button>
-        </form>
+        <div className="grid gap-6 lg:grid-cols-[300px_1fr]">
+          <WorkersFilterSidebar
+            districtOptions={districtOptions}
+            filterKey={`${initialFilters.skill}-${initialFilters.district}`}
+            isLoading={isLoading}
+            resultCount={workers.length}
+            selectedDistrict={selectedDistrict}
+            selectedSkill={selectedSkill}
+            serviceOptions={serviceOptions}
+            onReset={handleReset}
+            onSearch={handleSearch}
+            onSelectedDistrictChange={setSelectedDistrict}
+            onSelectedSkillChange={setSelectedSkill}
+          />
+          <WorkersResultsSection
+            hasSearched={hasSearched}
+            isLoading={isLoading}
+            status={status}
+            workers={workers}
+          />
         </div>
-
-        {status ? (
-          <div className="mb-4 flex items-start gap-2 rounded-md bg-muted p-3 text-sm">
-            {hasSearched ? <AlertCircle className="mt-0.5 size-4 shrink-0 text-muted-foreground" /> : null}
-            <p>{status}</p>
-          </div>
-        ) : null}
-
-        {isLoading ? (
-          <div className="rounded-lg border bg-card p-6 text-center shadow-sm">
-            <Loader2 className="mx-auto mb-3 size-8 animate-spin text-primary" />
-            <p className="text-sm text-muted-foreground">ভেরিফাইড কর্মীদের তালিকা খোঁজা হচ্ছে...</p>
-          </div>
-        ) : null}
-
-        {!isLoading ? (
-          <div className="grid gap-4 lg:grid-cols-2">
-            {workers.map((worker) => (
-              <WorkerResultCard key={worker.id} worker={worker} />
-            ))}
-          </div>
-        ) : null}
-
-        {hasSearched && !isLoading && !status && workers.length === 0 ? (
-          <div className="rounded-lg border bg-card p-6 text-center shadow-sm">
-            <SearchX className="mx-auto mb-3 size-8 text-muted-foreground" />
-            <h2 className="text-lg font-bold">কোনো ভেরিফাইড কর্মী পাওয়া যায়নি</h2>
-            <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-muted-foreground">
-              সেবা বা জেলার নাম একটু পরিবর্তন করে আবার খুঁজে দেখুন।
-            </p>
-          </div>
-        ) : null}
       </div>
     </main>
   );
