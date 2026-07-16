@@ -113,8 +113,7 @@ export default function VerifyOtpPage() {
       });
 
       authTokenStorage.set(result.verifyOtp.accessToken);
-      const destination =
-        result.verifyOtp.user.role === 'WORKER' ? '/worker/profile' : '/workers';
+      const destination = result.verifyOtp.user.role === 'WORKER' ? '/worker/profile' : '/workers';
 
       setNextHref(destination);
       setStatus(
