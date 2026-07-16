@@ -191,7 +191,11 @@ export default function WorkerProfilePage() {
         nidBackUrl: result.myWorkerProfile?.nidBackUrl || '',
         nidBackPublicId: result.myWorkerProfile?.nidBackPublicId || '',
       });
-      setStatus(result.myWorkerProfile?.status === 'PENDING' ? 'আপনার প্রোফাইল অ্যাডমিন অনুমোদনের অপেক্ষায় আছে।' : '');
+      setStatus(
+        result.myWorkerProfile?.status === 'PENDING'
+          ? 'আপনার প্রোফাইল অ্যাডমিন অনুমোদনের অপেক্ষায় আছে।'
+          : ''
+      );
     } catch (error) {
       setStatus(error instanceof Error ? error.message : 'প্রোফাইল তথ্য আনা যায়নি');
     } finally {
@@ -427,7 +431,7 @@ export default function WorkerProfilePage() {
         ) : null}
 
         {account ? (
-          <div className="mb-5 grid gap-3 rounded-md border bg-background p-4 text-sm sm:grid-cols-2">
+          <div className="mb-5 gap-3 rounded-md border bg-background p-4 text-sm sm:grid-cols-2">
             <div className="flex items-center gap-2">
               <UserRound className="size-4 text-primary" />
               <span className="font-medium">{account.name}</span>
@@ -447,7 +451,7 @@ export default function WorkerProfilePage() {
                 ? 'ভেরিফাইড'
                 : profile.status === 'PENDING'
                   ? 'অনুমোদনের অপেক্ষায়'
-                : 'নিষ্ক্রিয়'}
+                  : 'নিষ্ক্রিয়'}
             </Badge>
           </div>
         ) : null}
@@ -474,7 +478,9 @@ export default function WorkerProfilePage() {
 
                 if (!option) return;
 
-                setServiceOptions((currentOptions) => mergeServiceOptions(currentOptions, [option]));
+                setServiceOptions((currentOptions) =>
+                  mergeServiceOptions(currentOptions, [option])
+                );
                 setSelectedSkill(option);
               }}
             />
@@ -500,14 +506,21 @@ export default function WorkerProfilePage() {
               name="upazila"
               options={upazilaOptions}
               value={selectedUpazila}
-              placeholder={selectedDistrict ? 'উপজেলা/থানা নির্বাচন করুন' : 'আগে জেলা নির্বাচন করুন'}
+              placeholder={
+                selectedDistrict ? 'উপজেলা/থানা নির্বাচন করুন' : 'আগে জেলা নির্বাচন করুন'
+              }
               isDisabled={!selectedDistrict}
               onChange={setSelectedUpazila}
             />
           </div>
           <div className="space-y-2">
             <Label htmlFor="area">এলাকা</Label>
-            <Input id="area" name="area" placeholder="মিরপুর ১০" defaultValue={profile?.area || ''} />
+            <Input
+              id="area"
+              name="area"
+              placeholder="মিরপুর ১০"
+              defaultValue={profile?.area || ''}
+            />
           </div>
           <div className="space-y-2">
             <Label htmlFor="profilePhoto">প্রোফাইল ছবি</Label>
