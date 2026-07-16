@@ -4,15 +4,16 @@ import Image from 'next/image';
 import Link from 'next/link';
 import {
   ArrowRight,
+  BadgeCheck,
+  BarChart3,
+  BriefcaseBusiness,
   FileCheck2,
-  Filter,
   Phone,
   Search,
   ShieldCheck,
   UserRoundPlus,
 } from 'lucide-react';
 
-import { HomeFeaturedWorkers } from '@/components/home/home-featured-workers';
 import { HomeSearchForm } from '@/components/home/home-search-form';
 import { LanguageSwitcher } from '@/components/site/language-switcher';
 import { ThemeToggle } from '@/components/site/theme-toggle';
@@ -23,17 +24,19 @@ import { useLanguage } from '@/lib/language';
 const copy = {
   bn: {
     navSearch: 'কর্মী খুঁজুন',
-    navProfiles: 'প্রোফাইল',
+    navStats: 'পরিসংখ্যান',
     navProcess: 'যেভাবে কাজ করে',
     navJoin: 'কর্মী হোন',
     login: 'লগইন',
     admin: 'অ্যাডমিন',
     search: 'সার্চ',
-    badge: 'NID যাচাইকৃত স্থানীয় কর্মী',
-    headline: 'কর্মীর প্রোফাইল দেখুন, পছন্দ হলে নম্বর আনলক করুন',
+    badge: 'বাংলাদেশের যাচাইকৃত কর্মী ডিরেক্টরি',
+    headline: 'আপনার নিকটবর্তী এলাকায় দক্ষ কর্মী খোঁজা এখন সহজ',
     subtitle:
       'আপনার এলাকার প্লাম্বার, ইলেকট্রিশিয়ান, রং মিস্ত্রি বা গৃহসেবা কর্মীর যাচাইকৃত প্রোফাইল ব্রাউজ করুন। তথ্য দেখা ফ্রি, যোগাযোগ নম্বর দেখতে ছোট চার্জ।',
-    filterCta: 'ফিল্টার দিয়ে খুঁজুন',
+    quote: 'প্রোফাইল দেখা সম্পূর্ণ ফ্রি। কাজের জন্য যোগাযোগ করতে চাইলে ছোট চার্জে নম্বর আনলক করুন।',
+    createTitle: 'দক্ষে সম্পূর্ণ বিনামূল্যে কর্মী প্রোফাইল তৈরি করা যায়',
+    filterCta: 'কর্মী খুঁজুন',
     joinCta: 'কর্মী হিসেবে যোগ দিন',
     stats: [
       { value: '৬৪', label: 'জেলা কভারেজ' },
@@ -42,9 +45,14 @@ const copy = {
     ],
     searchEyebrow: 'প্রোফাইল সার্চ',
     searchTitle: 'সেবা ও লোকেশন দিয়ে কর্মী খুঁজুন',
-    profilesEyebrow: 'নতুন ভেরিফাইড প্রোফাইল',
-    profilesTitle: 'ব্রাউজ করুন, তারপর সিদ্ধান্ত নিন',
-    allProfiles: 'সব প্রোফাইল',
+    statsTitle: 'দক্ষ সেবা গ্রহীতার পরিসংখ্যান',
+    statCards: [
+      { value: '৬৪', label: 'জেলা কভারেজ' },
+      { value: '৳২০', label: 'একটি নম্বর আনলক' },
+      { value: '৳১০০', label: '১০ প্রোফাইল প্যাক' },
+      { value: '৩ ধাপ', label: 'যাচাই প্রক্রিয়া' },
+    ],
+    processTitle: 'দক্ষ যেভাবে কাজ করে',
     steps: [
       {
         title: 'কর্মী প্রোফাইল তৈরি',
@@ -66,17 +74,20 @@ const copy = {
   },
   en: {
     navSearch: 'Find Workers',
-    navProfiles: 'Profiles',
+    navStats: 'Stats',
     navProcess: 'How It Works',
     navJoin: 'Join as Worker',
     login: 'Login',
     admin: 'Admin',
     search: 'Search',
-    badge: 'NID verified local workers',
-    headline: 'Browse worker profiles, unlock contact only when you choose',
+    badge: 'Verified worker directory for Bangladesh',
+    headline: 'Find skilled workers near your location with confidence',
     subtitle:
       'Find verified plumbers, electricians, painters, carpenters and home-service workers near you. Profile details are free; contact access is paid.',
-    filterCta: 'Search with filters',
+    quote:
+      'Profile browsing is free. Unlock contact numbers with a small charge only when you want to hire.',
+    createTitle: 'Create a worker profile on Dokho completely free',
+    filterCta: 'Find workers',
     joinCta: 'Join as worker',
     stats: [
       { value: '64', label: 'District coverage' },
@@ -85,9 +96,14 @@ const copy = {
     ],
     searchEyebrow: 'Profile search',
     searchTitle: 'Find workers by service and location',
-    profilesEyebrow: 'New approved profiles',
-    profilesTitle: 'Browse first, decide later',
-    allProfiles: 'All profiles',
+    statsTitle: 'Dokho service statistics',
+    statCards: [
+      { value: '64', label: 'District coverage' },
+      { value: '৳20', label: 'Unlock one contact' },
+      { value: '৳100', label: '10-profile pack' },
+      { value: '3 steps', label: 'Verification flow' },
+    ],
+    processTitle: 'How Dokho works',
     steps: [
       {
         title: 'Create worker profile',
@@ -129,8 +145,8 @@ export function HomePageShell() {
             <a href="#search" className="hover:text-foreground">
               {text.navSearch}
             </a>
-            <a href="#profiles" className="hover:text-foreground">
-              {text.navProfiles}
+            <a href="#stats" className="hover:text-foreground">
+              {text.navStats}
             </a>
             <a href="#process" className="hover:text-foreground">
               {text.navProcess}
@@ -158,88 +174,113 @@ export function HomePageShell() {
         </div>
       </header>
 
-      <section className="relative min-h-[620px] overflow-hidden bg-foreground text-primary-foreground">
+      <section className="relative overflow-hidden bg-secondary text-foreground">
         <Image
           src="/brand/hero-worker.jpeg"
           alt="যাচাইকৃত কর্মী সেবা"
           fill
           sizes="100vw"
-          className="object-cover opacity-35"
+          className="object-cover opacity-12 dark:opacity-10"
           priority
         />
-        <div className="absolute inset-0 bg-[linear-gradient(90deg,oklch(0.18_0.035_215)_0%,oklch(0.18_0.035_215/0.86)_44%,oklch(0.18_0.035_215/0.28)_100%)]" />
-        <div className="relative mx-auto flex min-h-[620px] max-w-6xl flex-col justify-center px-4 py-12 sm:px-6 lg:px-8">
-          <div className="max-w-3xl">
-            <Badge variant="success" className="mb-5 border-primary/20 bg-primary/15 text-white">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,oklch(0.92_0.08_340/0.75),transparent_42%),radial-gradient(circle_at_85%_20%,oklch(0.86_0.11_300/0.7),transparent_30%)] dark:bg-[radial-gradient(circle_at_top,oklch(0.35_0.09_320/0.7),transparent_42%),radial-gradient(circle_at_85%_20%,oklch(0.28_0.08_285/0.65),transparent_30%)]" />
+        <div className="relative mx-auto flex min-h-[680px] max-w-6xl flex-col items-center justify-center px-4 pb-24 pt-12 text-center sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-4xl">
+            <Badge variant="success" className="mb-5">
               <ShieldCheck />
               {text.badge}
             </Badge>
-            <h1 className="max-w-3xl text-4xl font-bold leading-tight text-white sm:text-6xl">
+            <h1 className="mx-auto max-w-4xl text-4xl font-bold leading-tight text-primary sm:text-6xl">
               {text.headline}
             </h1>
-            <p className="mt-5 max-w-2xl text-lg leading-8 text-white/82">{text.subtitle}</p>
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <Button size="lg" asChild>
-                <a href="#search">
-                  <Filter />
-                  {text.filterCta}
-                </a>
-              </Button>
-              <Button variant="secondary" size="lg" asChild>
-                <Link href="/register">
-                  <UserRoundPlus />
-                  {text.joinCta}
-                </Link>
-              </Button>
+            <p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-muted-foreground">
+              {text.subtitle}
+            </p>
+            <div className="mx-auto mt-8 max-w-2xl rounded-lg border border-primary/25 bg-card/70 p-5 text-sm leading-7 shadow-sm backdrop-blur">
+              {text.quote}
             </div>
-          </div>
-          <div className="mt-10 grid max-w-2xl gap-3 sm:grid-cols-3">
-            {text.stats.map((item) => (
-              <div key={item.label} className="border-l border-white/30 pl-4">
-                <p className="text-3xl font-bold text-white">{item.value}</p>
-                <p className="mt-1 text-sm text-white/72">{item.label}</p>
-              </div>
-            ))}
           </div>
         </div>
       </section>
 
-      <section id="search" className="border-b bg-card">
-        <div className="mx-auto grid max-w-6xl gap-6 px-4 py-8 sm:px-6 lg:grid-cols-[380px_1fr] lg:px-8">
-          <aside className="rounded-lg border bg-background p-5 shadow-sm">
-            <div className="mb-5">
+      <section id="search" className="relative z-10 -mt-16 px-4 sm:px-6">
+        <div className="mx-auto max-w-5xl rounded-lg border bg-card p-5 shadow-xl shadow-primary/10">
+          <div className="mb-5 grid gap-2 md:grid-cols-[1fr_auto] md:items-end">
+            <div>
               <p className="mb-2 flex items-center gap-2 text-sm font-semibold text-primary">
                 <Search className="size-4" />
                 {text.searchEyebrow}
               </p>
               <h2 className="text-2xl font-bold">{text.searchTitle}</h2>
             </div>
-            <HomeSearchForm />
-          </aside>
-
-          <div id="profiles">
-            <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-              <div>
-                <p className="text-sm font-semibold text-primary">{text.profilesEyebrow}</p>
-                <h2 className="text-2xl font-bold">{text.profilesTitle}</h2>
-              </div>
-              <Button variant="outline" asChild>
-                <Link href="/workers">
-                  {text.allProfiles}
-                  <ArrowRight />
-                </Link>
-              </Button>
-            </div>
-            <HomeFeaturedWorkers />
+            <Button variant="outline" asChild>
+              <Link href="/workers">
+                {text.filterCta}
+                <ArrowRight />
+              </Link>
+            </Button>
           </div>
+          <HomeSearchForm />
         </div>
       </section>
 
-      <section id="process" className="border-b bg-background">
-        <div className="mx-auto grid max-w-6xl gap-6 px-4 py-8 sm:px-6 md:grid-cols-3 lg:px-8">
+      <section className="mx-auto max-w-6xl px-4 py-20 text-center sm:px-6 lg:px-8">
+        <h2 className="text-3xl font-bold leading-tight text-primary sm:text-4xl">
+          {text.createTitle}
+        </h2>
+        <div className="mx-auto mt-8 grid max-w-4xl gap-4 sm:grid-cols-2">
+          <Button
+            size="lg"
+            asChild
+            className="h-14 bg-accent text-accent-foreground hover:bg-accent/90"
+          >
+            <Link href="/register">
+              <UserRoundPlus />
+              {text.joinCta}
+            </Link>
+          </Button>
+          <Button variant="outline" size="lg" asChild className="h-14">
+            <Link href="/workers">
+              <Search />
+              {text.filterCta}
+            </Link>
+          </Button>
+        </div>
+      </section>
+
+      <section id="stats" className="mx-auto max-w-6xl px-4 py-12 text-center sm:px-6 lg:px-8">
+        <h2 className="text-3xl font-bold leading-tight text-primary sm:text-4xl">
+          {text.statsTitle}
+        </h2>
+        <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          {text.statCards.map((stat, index) => (
+            <div key={stat.label} className="rounded-lg border bg-card p-6 shadow-sm">
+              <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-full border bg-secondary text-primary">
+                {index === 0 ? (
+                  <BriefcaseBusiness className="size-8" />
+                ) : index === 1 ? (
+                  <Phone className="size-8" />
+                ) : index === 2 ? (
+                  <BarChart3 className="size-8" />
+                ) : (
+                  <BadgeCheck className="size-8" />
+                )}
+              </div>
+              <p className="text-4xl font-bold text-foreground">{stat.value}</p>
+              <p className="mt-2 text-sm font-medium text-muted-foreground">{stat.label}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section id="process" className="mx-auto max-w-6xl px-4 py-16 text-center sm:px-6 lg:px-8">
+        <h2 className="text-3xl font-bold leading-tight text-primary sm:text-4xl">
+          {text.processTitle}
+        </h2>
+        <div className="mt-10 grid gap-6 md:grid-cols-3">
           {text.steps.map((step, index) => (
             <div key={step.title} className="rounded-lg border bg-card p-5 shadow-sm">
-              <div className="mb-4 flex size-11 items-center justify-center rounded-md bg-secondary text-primary">
+              <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-md bg-secondary text-primary">
                 {index === 0 ? <UserRoundPlus /> : index === 1 ? <FileCheck2 /> : <Phone />}
               </div>
               <h3 className="font-bold">{step.title}</h3>
@@ -249,11 +290,13 @@ export function HomePageShell() {
         </div>
       </section>
 
-      <section id="admin" className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="flex flex-col gap-4 rounded-lg border bg-foreground p-6 text-white md:flex-row md:items-center md:justify-between">
+      <section id="admin" className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
+        <div className="flex flex-col gap-4 rounded-lg border bg-primary p-6 text-primary-foreground md:flex-row md:items-center md:justify-between">
           <div>
             <h2 className="text-2xl font-bold">{text.footerTitle}</h2>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-white/75">{text.footerBody}</p>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-primary-foreground/80">
+              {text.footerBody}
+            </p>
           </div>
           <Button size="lg" asChild>
             <Link href="/workers">
