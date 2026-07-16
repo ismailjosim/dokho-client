@@ -100,6 +100,7 @@ export default function WorkerDetailsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isUnlocking, setIsUnlocking] = useState(false);
   const [isPaying, setIsPaying] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [availableCredits, setAvailableCredits] = useState(0);
   const [unlockedPhone, setUnlockedPhone] = useState('');
 
@@ -128,6 +129,8 @@ export default function WorkerDetailsPage() {
   useEffect(() => {
     async function loadContactAccess() {
       const token = authTokenStorage.get();
+
+      setIsLoggedIn(Boolean(token));
 
       if (!token) return;
 
@@ -172,9 +175,7 @@ export default function WorkerDetailsPage() {
       setStatus('যোগাযোগ নম্বর আনলক হয়েছে।');
     } catch (error) {
       setStatus(
-        error instanceof Error
-          ? error.message
-          : 'যোগাযোগ নম্বর আনলক করতে পেমেন্ট ক্রেডিট প্রয়োজন'
+        error instanceof Error ? error.message : 'যোগাযোগ নম্বর আনলক করতে পেমেন্ট ক্রেডিট প্রয়োজন'
       );
     } finally {
       setIsUnlocking(false);
@@ -219,7 +220,7 @@ export default function WorkerDetailsPage() {
 
   return (
     <main className="min-h-screen bg-background">
-      <section className="border-b bg-foreground text-white">
+      <section className="border-b bg-secondary text-foreground">
         <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
           <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <Button variant="secondary" asChild className="w-fit">
@@ -233,7 +234,7 @@ export default function WorkerDetailsPage() {
               <ThemeToggle />
             </div>
           </div>
-          <p className="flex items-center gap-2 text-sm font-semibold text-white/72">
+          <p className="flex items-center gap-2 text-sm font-semibold text-primary">
             <ShieldCheck className="size-4" />
             যাচাইকৃত কর্মী প্রোফাইল
           </p>
@@ -307,6 +308,31 @@ export default function WorkerDetailsPage() {
                       <p className="mt-1 font-semibold">{worker.skill}</p>
                     </div>
                   </div>
+                  <div className="mt-6 overflow-hidden rounded-md border">
+                    <div className="border-b bg-secondary px-4 py-3 text-center font-bold text-primary">
+                      কর্মীর তথ্য
+                    </div>
+                    {[
+                      ['নাম', worker.user.name],
+                      ['সেবা', worker.skill],
+                      ['জেলা', worker.district],
+                      ['উপজেলা/থানা', worker.upazila || 'দেওয়া হয়নি'],
+                      ['এলাকা', worker.area || 'দেওয়া হয়নি'],
+                      ['অভিজ্ঞতা', `${worker.experienceYears} বছর`],
+                      [
+                        'কাজের অবস্থা',
+                        worker.availability === 'AVAILABLE' ? 'কাজ নিতে পারবেন' : 'এখন ব্যস্ত',
+                      ],
+                    ].map(([label, value]) => (
+                      <div
+                        key={label}
+                        className="grid grid-cols-[140px_1fr] border-b last:border-b-0"
+                      >
+                        <div className="bg-muted px-4 py-3 text-sm font-semibold">{label}</div>
+                        <div className="px-4 py-3 text-sm text-muted-foreground">{value}</div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             </article>
@@ -316,7 +342,9 @@ export default function WorkerDetailsPage() {
                 <p className="mb-1 text-sm font-semibold text-primary">যোগাযোগ অ্যাক্সেস</p>
                 <h2 className="text-2xl font-bold">নম্বর আনলক</h2>
                 <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                  ক্রেডিট: {availableCredits} | ১টি নম্বর দেখতে ৳২০ অথবা ১০টি নম্বর ৳১০০
+                  {isLoggedIn
+                    ? `ক্রেডিট: ${availableCredits} | ১টি নম্বর দেখতে ৳২০ অথবা ১০টি নম্বর ৳১০০`
+                    : 'যোগাযোগ নম্বর দেখতে আগে অ্যাকাউন্টে লগইন করুন।'}
                 </p>
                 {unlockedPhone ? (
                   <Button asChild className="mt-4 w-full">
@@ -325,57 +353,78 @@ export default function WorkerDetailsPage() {
                       {unlockedPhone}
                     </a>
                   </Button>
+                ) : !isLoggedIn ? (
+                  <Button asChild className="mt-4 w-full">
+                    <Link href="/verify-otp">
+                      <Phone />
+                      লগইন করে যোগাযোগ দেখুন
+                    </Link>
+                  </Button>
+                ) : availableCredits < 1 ? (
+                  <p className="mt-4 rounded-md bg-muted p-3 text-sm text-muted-foreground">
+                    আপনার কোনো ক্রেডিট নেই। নিচের পেমেন্ট রিকোয়েস্ট অনুমোদিত হলে নম্বর আনলক করতে
+                    পারবেন।
+                  </p>
                 ) : (
-                  <Button className="mt-4 w-full" onClick={handleUnlockContact} disabled={isUnlocking}>
+                  <Button
+                    className="mt-4 w-full"
+                    onClick={handleUnlockContact}
+                    disabled={isUnlocking}
+                  >
                     {isUnlocking ? <Loader2 className="animate-spin" /> : <Phone />}
                     নম্বর আনলক করুন
                   </Button>
                 )}
               </div>
 
-              <form className="grid gap-3 rounded-lg border bg-card p-5 shadow-sm" onSubmit={handleCreatePayment}>
-                <div className="flex items-center gap-2">
-                  <CreditCard className="size-4 text-primary" />
-                  <h2 className="font-semibold">পেমেন্ট রিকোয়েস্ট</h2>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="plan">প্ল্যান</Label>
-                  <select
-                    id="plan"
-                    name="plan"
-                    className="h-11 w-full rounded-md border border-input bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                    defaultValue="SINGLE_CONTACT"
-                  >
-                    <option value="SINGLE_CONTACT">৳২০ - ১টি প্রোফাইল</option>
-                    <option value="BULK_10_CONTACTS">৳১০০ - ১০টি প্রোফাইল</option>
-                  </select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="method">মেথড</Label>
-                  <select
-                    id="method"
-                    name="method"
-                    className="h-11 w-full rounded-md border border-input bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                    defaultValue="BKASH"
-                  >
-                    <option value="BKASH">bKash</option>
-                    <option value="NAGAD">Nagad</option>
-                    <option value="SSLCOMMERZ">SSLCommerz</option>
-                  </select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="senderPhone">প্রেরক নম্বর</Label>
-                  <Input id="senderPhone" name="senderPhone" placeholder="01XXXXXXXXX" />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="transactionId">ট্রানজেকশন আইডি</Label>
-                  <Input id="transactionId" name="transactionId" placeholder="যেমন: TXN123" />
-                </div>
-                <Button className="w-full" disabled={isPaying}>
-                  {isPaying ? <Loader2 className="animate-spin" /> : <CreditCard />}
-                  রিকোয়েস্ট জমা দিন
-                </Button>
-              </form>
+              {isLoggedIn && !unlockedPhone && availableCredits < 1 ? (
+                <form
+                  className="grid gap-3 rounded-lg border bg-card p-5 shadow-sm"
+                  onSubmit={handleCreatePayment}
+                >
+                  <div className="flex items-center gap-2">
+                    <CreditCard className="size-4 text-primary" />
+                    <h2 className="font-semibold">পেমেন্ট রিকোয়েস্ট</h2>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="plan">প্ল্যান</Label>
+                    <select
+                      id="plan"
+                      name="plan"
+                      className="h-11 w-full rounded-md border border-input bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      defaultValue="SINGLE_CONTACT"
+                    >
+                      <option value="SINGLE_CONTACT">৳২০ - ১টি প্রোফাইল</option>
+                      <option value="BULK_10_CONTACTS">৳১০০ - ১০টি প্রোফাইল</option>
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="method">মেথড</Label>
+                    <select
+                      id="method"
+                      name="method"
+                      className="h-11 w-full rounded-md border border-input bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      defaultValue="BKASH"
+                    >
+                      <option value="BKASH">bKash</option>
+                      <option value="NAGAD">Nagad</option>
+                      <option value="SSLCOMMERZ">SSLCommerz</option>
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="senderPhone">প্রেরক নম্বর</Label>
+                    <Input id="senderPhone" name="senderPhone" placeholder="01XXXXXXXXX" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="transactionId">ট্রানজেকশন আইডি</Label>
+                    <Input id="transactionId" name="transactionId" placeholder="যেমন: TXN123" />
+                  </div>
+                  <Button className="w-full" disabled={isPaying}>
+                    {isPaying ? <Loader2 className="animate-spin" /> : <CreditCard />}
+                    রিকোয়েস্ট জমা দিন
+                  </Button>
+                </form>
+              ) : null}
             </aside>
           </div>
         ) : null}
