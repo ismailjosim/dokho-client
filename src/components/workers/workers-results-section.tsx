@@ -1,4 +1,4 @@
-import { AlertCircle, Loader2, SearchX } from 'lucide-react';
+import { AlertCircle, Loader2, SearchX, UserSearch } from 'lucide-react';
 
 import { WorkerResultCard, type WorkerResult } from '@/components/workers/worker-result-card';
 
@@ -20,7 +20,7 @@ export function WorkersResultsSection({
       <div className="mb-5 text-center">
         <h2 className="text-3xl font-bold text-primary">কর্মী প্রোফাইল সমূহ</h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          {isLoading ? 'লোড হচ্ছে...' : `${workers.length}টি প্রোফাইল পাওয়া গেছে`}
+          {isLoading ? 'লোড হচ্ছে...' : `${workers.length}টি প্রোফাইল পাওয়া গেছে`}
         </p>
       </div>
 
@@ -42,19 +42,26 @@ export function WorkersResultsSection({
 
       {!isLoading ? (
         <div className="grid gap-4 xl:grid-cols-2">
-          {workers.map((worker) => (
-            <WorkerResultCard key={worker.id} worker={worker} />
+          {workers.map((worker, index) => (
+            <WorkerResultCard key={worker.id} worker={worker} index={index} />
           ))}
         </div>
       ) : null}
 
       {hasSearched && !isLoading && !status && workers.length === 0 ? (
-        <div className="rounded-lg border bg-card p-6 text-center shadow-sm">
-          <SearchX className="mx-auto mb-3 size-8 text-muted-foreground" />
-          <h2 className="text-lg font-bold">কোনো ভেরিফাইড কর্মী পাওয়া যায়নি</h2>
-          <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-muted-foreground">
-            সেবা বা জেলার নাম একটু পরিবর্তন করে আবার খুঁজে দেখুন।
+        <div className="animate-card-enter rounded-xl border bg-card p-8 text-center shadow-sm sm:p-10">
+          <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-full bg-muted">
+            <UserSearch className="size-8 text-muted-foreground" />
+          </div>
+          <h2 className="text-xl font-bold">কোনো ভেরিফাইড কর্মী পাওয়া যায়নি</h2>
+          <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-muted-foreground">
+            আপনার নির্বাচিত সেবা বা জেলায় এখনো কোনো যাচাইকৃত কর্মী নেই। সেবা বা জেলার নাম একটু
+            পরিবর্তন করে আবার খুঁজে দেখুন, অথবা &ldquo;ফিল্টার মুছুন&rdquo; চাপুন।
           </p>
+          <div className="mx-auto mt-5 flex items-center justify-center gap-2 text-xs text-muted-foreground">
+            <SearchX className="size-4" />
+            <span>অন্য সেবা বা এলাকা দিয়ে আবার চেষ্টা করুন</span>
+          </div>
         </div>
       ) : null}
     </section>
