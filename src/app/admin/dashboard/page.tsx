@@ -153,11 +153,7 @@ export default function AdminDashboardPage() {
       const result = await graphqlRequest<{
         pendingWorkerProfiles: PendingWorker[];
         pendingPaymentRequests: PendingPayment[];
-      }>(
-        PENDING_WORKERS,
-        undefined,
-        token
-      );
+      }>(PENDING_WORKERS, undefined, token);
       setWorkers(result.pendingWorkerProfiles);
       setPayments(result.pendingPaymentRequests);
       setStatus(
@@ -359,7 +355,11 @@ export default function AdminDashboardPage() {
                     onClick={() => moderatePayment(payment, 'reject')}
                     disabled={Boolean(activeWorkerId)}
                   >
-                    {activeWorkerId === payment.id ? <Loader2 className="animate-spin" /> : <XCircle />}
+                    {activeWorkerId === payment.id ? (
+                      <Loader2 className="animate-spin" />
+                    ) : (
+                      <XCircle />
+                    )}
                     বাতিল
                   </Button>
                 </div>
@@ -375,7 +375,9 @@ export default function AdminDashboardPage() {
                 <Badge variant="outline">{bn.status.pending}</Badge>
                 <Badge variant="secondary">{worker.skill}</Badge>
                 <Badge variant={worker.availability === 'AVAILABLE' ? 'success' : 'outline'}>
-                  {worker.availability === 'AVAILABLE' ? bn.status.available : bn.status.notAvailable}
+                  {worker.availability === 'AVAILABLE'
+                    ? bn.status.available
+                    : bn.status.notAvailable}
                 </Badge>
               </div>
               <h2 className="text-xl font-bold">{worker.user.name}</h2>
@@ -394,8 +396,14 @@ export default function AdminDashboardPage() {
                 </p>
                 <p className="flex items-center gap-2">
                   <FileImage className="size-4 text-primary" />
-                  ছবি: {worker.profilePhotoUrl ? (
-                    <a className="text-primary hover:underline" href={worker.profilePhotoUrl} target="_blank" rel="noreferrer">
+                  ছবি:{' '}
+                  {worker.profilePhotoUrl ? (
+                    <a
+                      className="text-primary hover:underline"
+                      href={worker.profilePhotoUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
                       দেখুন
                     </a>
                   ) : (
@@ -406,14 +414,24 @@ export default function AdminDashboardPage() {
                   <FileImage className="size-4 text-primary" />
                   NID:{' '}
                   {worker.nidFrontUrl ? (
-                    <a className="text-primary hover:underline" href={worker.nidFrontUrl} target="_blank" rel="noreferrer">
+                    <a
+                      className="text-primary hover:underline"
+                      href={worker.nidFrontUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
                       সামনের ছবি
                     </a>
                   ) : (
                     'সামনের ছবি নেই'
                   )}
                   {worker.nidBackUrl ? (
-                    <a className="text-primary hover:underline" href={worker.nidBackUrl} target="_blank" rel="noreferrer">
+                    <a
+                      className="text-primary hover:underline"
+                      href={worker.nidBackUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
                       পেছনের ছবি
                     </a>
                   ) : null}
@@ -436,7 +454,11 @@ export default function AdminDashboardPage() {
                   onClick={() => moderateWorker(worker, 'deactivate')}
                   disabled={Boolean(activeWorkerId)}
                 >
-                  {activeWorkerId === worker.id ? <Loader2 className="animate-spin" /> : <XCircle />}
+                  {activeWorkerId === worker.id ? (
+                    <Loader2 className="animate-spin" />
+                  ) : (
+                    <XCircle />
+                  )}
                   {activeWorkerId === worker.id ? 'প্রসেস হচ্ছে' : bn.action.deactivate}
                 </Button>
               </div>
