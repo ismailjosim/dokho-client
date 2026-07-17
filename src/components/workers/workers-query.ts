@@ -11,6 +11,7 @@ export const WORKERS_QUERY = /* GraphQL */ `
       availability
       user {
         name
+        maskedPhone
       }
     }
   }
